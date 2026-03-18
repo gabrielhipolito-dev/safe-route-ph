@@ -8,50 +8,35 @@ const fareGuide = [
 
 export default function FaresPage() {
 	return (
-		<section style={{ padding: '40px 24px', maxWidth: '980px', margin: '0 auto' }}>
-			<h1 style={{ color: '#0B1F3A', fontSize: '2rem', marginBottom: '8px' }}>
+		<section className="mx-auto max-w-[980px] px-6 py-10">
+			<h1 className="mb-2 text-3xl font-bold text-[#0B1F3A]">
 				Basic Fare Information
 			</h1>
-			<p style={{ color: '#4B5563', marginBottom: '24px', lineHeight: 1.6 }}>
+			<p className="mb-6 leading-relaxed text-gray-600">
 				These are estimated fares for common transport options around Metro Manila.
 				Actual costs may vary by route, distance, time, and operator policy.
 			</p>
 
-			<div style={{ display: 'grid', gap: '16px' }}>
+			<div className="grid gap-4">
 				{fareGuide.map((item) => (
 					<article
 						key={item.ride}
-						style={{
-							border: '1px solid #E5E7EB',
-							borderRadius: '12px',
-							padding: '16px 18px',
-							backgroundColor: '#FFFFFF',
-							boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
-						}}
+						className="rounded-xl border border-gray-200 bg-white px-[18px] py-4 shadow-[0_2px_8px_rgba(0,0,0,0.05)]"
 					>
-						<h2 style={{ color: '#0B1F3A', fontSize: '1.15rem', marginBottom: '10px' }}>
+						<h2 className="mb-2.5 text-[1.15rem] font-semibold text-[#0B1F3A]">
 							{item.ride}
 						</h2>
-						<p style={{ margin: '0 0 6px', color: '#1F2937' }}>
+						<p className="mb-1.5 text-gray-800">
 							Regular Fare: <strong>{item.regular}</strong>
 						</p>
-						<p style={{ margin: 0, color: '#1F2937' }}>
+						<p className="text-gray-800">
 							Student Fare: <strong>{item.student}</strong>
 						</p>
 					</article>
 				))}
 			</div>
 
-			<div
-				style={{
-					marginTop: '28px',
-					borderLeft: '4px solid #1D4ED8',
-					padding: '12px 16px',
-					backgroundColor: '#EFF6FF',
-					color: '#1E3A8A',
-					borderRadius: '8px'
-				}}
-			>
+			<div className="mt-7 rounded-lg border-l-4 border-blue-700 bg-blue-50 px-4 py-3 text-blue-900">
 				Tip: Bring your valid school ID to ask for student discount when available.
 			</div>
 		</section>

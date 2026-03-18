@@ -45,76 +45,28 @@ const FIRST_TIMER_TIPS = [
   },
 ]
 
-const styles = {
-  heroSection: {
-    backgroundColor: '#0B1F3A',
-    color: 'white',
-    padding: '64px 24px',
-    textAlign: 'center',
-  },
-  heroTitle: {
-    fontSize: '2.5rem',
-    fontWeight: 800,
-    marginBottom: '16px',
-  },
-  heroSubtitle: {
-    fontSize: '1.1rem',
-    maxWidth: '600px',
-    margin: '0 auto',
-  },
-  contentSection: {
-    padding: '48px 24px',
-    backgroundColor: '#F5F7FB',
-  },
-  cardsGrid: {
-    maxWidth: '900px',
-    margin: '0 auto',
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-    gap: '24px',
-  },
-  card: {
-    backgroundColor: 'white',
-    border: '1px solid #E6ECF4',
-    borderRadius: '14px',
-    padding: '24px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
-  },
-  cardIcon: {
-    fontSize: '2rem',
-    marginBottom: '12px',
-  },
-  cardTitle: {
-    color: '#0B1F3A',
-    marginBottom: '8px',
-    fontSize: '1.1rem',
-  },
-  cardDescription: {
-    color: '#555',
-    fontSize: '0.95rem',
-    lineHeight: 1.6,
-  },
-}
-
 export default function FirstTimerGuide() {
   return (
     <div>
-      <section style={styles.heroSection}>
-        <h1 style={styles.heroTitle}>
+      <section className="bg-[#0B1F3A] px-6 py-16 text-center text-white">
+        <h1 className="mb-4 text-4xl font-extrabold sm:text-5xl">
           New to commuting in Manila? We got you.
         </h1>
-        <p style={styles.heroSubtitle}>
+        <p className="mx-auto max-w-[600px] text-[1.1rem] leading-relaxed">
           Your fellow students share everything you need to know about navigating Manila public transport
         </p>
       </section>
 
-      <section style={styles.contentSection}>
-        <div style={styles.cardsGrid}>
+      <section className="bg-slate-100 px-6 py-12">
+        <div className="mx-auto grid max-w-[900px] grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-6">
           {FIRST_TIMER_TIPS.map((tip) => (
-            <div key={tip.id} style={styles.card}>
-              <div style={styles.cardIcon}>{tip.icon}</div>
-              <h3 style={styles.cardTitle}>{tip.title}</h3>
-              <p style={styles.cardDescription}>{tip.description}</p>
+            <div
+              key={tip.id}
+              className="rounded-[14px] border border-[#E6ECF4] bg-white p-6 shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
+            >
+              <div className="mb-3 text-3xl">{tip.icon}</div>
+              <h3 className="mb-2 text-[1.1rem] font-semibold text-[#0B1F3A]">{tip.title}</h3>
+              <p className="text-[0.95rem] leading-relaxed text-gray-600">{tip.description}</p>
             </div>
           ))}
         </div>

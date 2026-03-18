@@ -3,86 +3,41 @@
 export default function Home() {
   return (
     <div>
-      <section style={{
-        backgroundColor: '#0B1F3A',
-        color: 'white',
-        padding: '80px 24px',
-        textAlign: 'center'
-      }}>
-        <h1 style={{ fontSize: '3rem', fontWeight: 800, margin: '0 0 16px' }}>
+      <section className="bg-[#0B1F3A] px-6 py-20 text-center text-white">
+        <h1 className="mb-4 text-4xl font-extrabold sm:text-5xl">
           Find Your Safest Way Home
         </h1>
-        <p style={{ fontSize: '1.2rem', marginBottom: '32px' }}>
+        <p className="mb-8 text-lg sm:text-xl">
           Student-verified commute routes, safety ratings, and real-time updates
         </p>
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '14px',
-          padding: '24px',
-          maxWidth: '800px',
-          margin: '0 auto',
-          display: 'flex',
-          gap: '16px',
-          alignItems: 'center'
-        }}>
+        <div className="mx-auto flex w-full max-w-4xl flex-col items-stretch gap-4 rounded-2xl bg-white p-6 sm:flex-row sm:items-center">
           <input
             placeholder="From (your school)"
-            style={{
-              flex: 1,
-              padding: '12px',
-              borderRadius: '8px',
-              border: '1px solid #ddd',
-              fontSize: '1rem'
-            }}
+            className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-base text-slate-800 outline-none transition focus:border-blue-600"
           />
           <input
             placeholder="To (your destination)"
-            style={{
-              flex: 1,
-              padding: '12px',
-              borderRadius: '8px',
-              border: '1px solid #ddd',
-              fontSize: '1rem'
-            }}
+            className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-base text-slate-800 outline-none transition focus:border-blue-600"
           />
-          <button style={{
-            backgroundColor: '#1D4ED8',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '12px 24px',
-            fontSize: '1rem',
-            fontWeight: 700,
-            cursor: 'pointer'
-          }}>
+          <button className="rounded-lg bg-blue-700 px-6 py-3 text-base font-bold text-white transition hover:bg-blue-800">
             Search Routes
           </button>
         </div>
       </section>
 
-      <section style={{
-        padding: '64px 24px',
-        display: 'flex',
-        gap: '24px',
-        justifyContent: 'center',
-        flexWrap: 'wrap'
-      }}>
+      <section className="flex flex-wrap justify-center gap-6 px-6 py-16">
         {[
           { icon: '📍', title: 'Route Finder', desc: 'Step-by-step jeepney and UV Express guides' },
           { icon: '🛡️', title: 'Safety Ratings', desc: 'Day and night safety scores from students' },
           { icon: '⏰', title: 'Last Trip Tracker', desc: 'Community-reported last departure times' },
         ].map(card => (
-          <div key={card.title} style={{
-            backgroundColor: 'white',
-            border: '1px solid #E6ECF4',
-            borderRadius: '14px',
-            padding: '24px',
-            width: '280px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
-          }}>
-            <div style={{ fontSize: '2rem', marginBottom: '12px' }}>{card.icon}</div>
-            <h3 style={{ color: '#0B1F3A', marginBottom: '8px' }}>{card.title}</h3>
-            <p style={{ color: '#555', fontSize: '0.95rem' }}>{card.desc}</p>
+          <div
+            key={card.title}
+            className="w-[280px] rounded-2xl border border-[#E6ECF4] bg-white p-6 shadow-[0_4px_12px_rgba(0,0,0,0.08)]"
+          >
+            <div className="mb-3 text-3xl">{card.icon}</div>
+            <h3 className="mb-2 text-lg font-semibold text-[#0B1F3A]">{card.title}</h3>
+            <p className="text-[0.95rem] text-gray-600">{card.desc}</p>
           </div>
         ))}
       </section>

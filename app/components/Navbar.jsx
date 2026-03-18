@@ -3,28 +3,16 @@ import Link from 'next/link'
 
 export default function Navbar() {
   return (
-    <nav style={{
-      backgroundColor: '#0B1F3A',
-      padding: '0 32px',
-      height: '64px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between'
-    }}>
-      <Link href="/" style={{
-        color: 'white',
-        fontWeight: 700,
-        fontSize: '1.2rem',
-        textDecoration: 'none'
-      }}>
+    <nav className="flex h-16 items-center justify-between bg-[#0B1F3A] px-4 sm:px-8">
+      <Link href="/" className="text-xl font-bold tracking-tight text-white">
         SafeRoute PH
       </Link>
 
-      <div style={{ display: 'flex', gap: '24px' }}>
-        <Link href="/route-result" style={{ color: 'white', textDecoration: 'none' }}>Routes</Link>
-        <Link href="/safety" style={{ color: 'white', textDecoration: 'none' }}>Safety</Link>
-        <Link href="/fares" style={{ color: 'white', textDecoration: 'none' }}>Fares</Link>
-        <Link href="/first-timer" style={{ color: 'white', textDecoration: 'none' }}>First Timer Guide</Link>
+      <div className="flex items-center gap-4 text-sm text-white sm:gap-6 sm:text-base">
+        <Link href="/route-result" className="transition-opacity hover:opacity-80">Routes</Link>
+        <Link href="/safety" className="transition-opacity hover:opacity-80">Safety</Link>
+        <Link href="/fares" className="transition-opacity hover:opacity-80">Fares</Link>
+        <Link href="/first-timer" className="transition-opacity hover:opacity-80">First Timer Guide</Link>
       </div>
     </nav>
   )
