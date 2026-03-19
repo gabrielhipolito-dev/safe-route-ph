@@ -1,46 +1,46 @@
-'use client'
+import SearchWidget from './components/SearchWidget';
+import FeatureCards from './components/FeatureCards';
 
 export default function Home() {
   return (
-    <div>
-      <section className="bg-[#0B1F3A] px-6 py-20 text-center text-white">
-        <h1 className="mb-4 text-4xl font-extrabold sm:text-5xl">
-          Find Your Safest Way Home
-        </h1>
-        <p className="mb-8 text-lg sm:text-xl">
-          Student-verified commute routes, safety ratings, and real-time updates
-        </p>
-        <div className="mx-auto flex w-full max-w-4xl flex-col items-stretch gap-4 rounded-2xl bg-white p-6 sm:flex-row sm:items-center">
-          <input
-            placeholder="From (your school)"
-            className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-base text-slate-800 outline-none transition focus:border-blue-600"
-          />
-          <input
-            placeholder="To (your destination)"
-            className="flex-1 rounded-lg border border-gray-300 px-3 py-3 text-base text-slate-800 outline-none transition focus:border-blue-600"
-          />
-          <button className="rounded-lg bg-blue-700 px-6 py-3 text-base font-bold text-white transition hover:bg-blue-800">
-            Search Routes
-          </button>
-        </div>
-      </section>
+    <div className="min-h-screen bg-white font-sans text-slate-900">
+      <main className="mx-auto max-w-7xl px-6 py-12 lg:py-24">
+        <div className="grid gap-16 lg:grid-cols-2 lg:gap-12 items-center">
+          
+          {/* Left Column: Copy & Search */}
+          <div className="max-w-xl">
+            <div className="mb-6 inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-700 ring-1 ring-inset ring-blue-700/10">
+              Covering 50+ Philippine Universities
+            </div>
+            
+            <h1 className="mb-6 text-5xl font-extrabold tracking-tight text-slate-900 sm:text-6xl lg:text-[4rem] lg:leading-[1.1]">
+              Your student commute, simplified.
+            </h1>
+            <p className="mb-10 text-lg leading-relaxed text-slate-600 sm:text-xl">
+              The industry standard for verified student transit routes, safety analytics, and real-time community updates across Metro Manila and beyond.
+            </p>
 
-      <section className="flex flex-wrap justify-center gap-6 px-6 py-16">
-        {[
-          { icon: '📍', title: 'Route Finder', desc: 'Step-by-step jeepney and UV Express guides' },
-          { icon: '🛡️', title: 'Safety Ratings', desc: 'Day and night safety scores from students' },
-          { icon: '⏰', title: 'Last Trip Tracker', desc: 'Community-reported last departure times' },
-        ].map(card => (
-          <div
-            key={card.title}
-            className="w-[280px] rounded-2xl border border-[#E6ECF4] bg-white p-6 shadow-[0_4px_12px_rgba(0,0,0,0.08)]"
-          >
-            <div className="mb-3 text-3xl">{card.icon}</div>
-            <h3 className="mb-2 text-lg font-semibold text-[#0B1F3A]">{card.title}</h3>
-            <p className="text-[0.95rem] text-gray-600">{card.desc}</p>
+            <SearchWidget />
           </div>
-        ))}
-      </section>
+
+          {/* Right Column: Hero Graphic / Placeholder Map */}
+          <div className="relative hidden w-full rounded-[2rem] bg-slate-50 lg:block lg:min-h-[640px] border border-slate-100 overflow-hidden shadow-sm">
+             <div className="absolute inset-0 flex items-center justify-center">
+                {/* Abstract map representation */}
+                <div className="h-full w-full opacity-[0.15]" style={{ backgroundImage: 'radial-gradient(#0f172a 1.5px, transparent 1.5px)', backgroundSize: '32px 32px' }}></div>
+                <div className="absolute flex flex-col items-center gap-4">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-2xl ring-1 ring-slate-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 15.007 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+                  </div>
+                  <div className="rounded-xl bg-slate-900/90 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-md">Interactive Commute Map</div>
+                </div>
+             </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Enterprise Features Section */}
+      <FeatureCards />
     </div>
   )
 }
