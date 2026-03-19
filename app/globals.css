@@ -17,5 +17,9 @@
   a {
     color: inherit;
     text-decoration: none;
+    -webkit-touch-callout: none;
+    /* Prevents the link popup when holding on mobile */
+    -webkit-user-drag: none;
+    /* Prevents link ghost/tooltip when dragging on desktop */
   }
 }
