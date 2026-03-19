@@ -3,8 +3,11 @@ import Link from 'next/link'
 
 export default function Navbar() {
   return (
-    <nav className="flex h-16 items-center justify-between bg-[#0B1F3A] px-4 sm:px-8">
-      <Link href="/" className="text-xl font-bold tracking-tight text-white">
+    <nav className="flex h-16 items-center justify-between border-b border-white/10 bg-[#0B1F3A] px-4 sm:px-8">
+      <Link href="/" className="flex items-center gap-2 text-xl font-bold tracking-tight text-white">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-sm font-extrabold text-[#0B1F3A]">
+          S
+        </div>
         SafeRoute PH
       </Link>
 
