@@ -12,7 +12,7 @@ export default function Navbar() {
       </Link>
 
       <div className="flex items-center gap-4 text-sm text-white sm:gap-6 sm:text-base">
-        <Link href="/route-result" className="transition-opacity hover:opacity-80">Routes</Link>
+        <Link href="/" className="transition-opacity hover:opacity-80">Routes</Link>
         <Link href="/safety" className="transition-opacity hover:opacity-80">Safety</Link>
         <Link href="/fares" className="transition-opacity hover:opacity-80">Fares</Link>
         <Link href="/first-timer" className="transition-opacity hover:opacity-80">First Timer Guide</Link>
