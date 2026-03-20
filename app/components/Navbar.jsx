@@ -15,6 +15,7 @@ export default function Navbar() {
         <Link href="/" className="transition-opacity hover:opacity-80">Routes</Link>
         <Link href="/safety" className="transition-opacity hover:opacity-80">Safety</Link>
         <Link href="/fares" className="transition-opacity hover:opacity-80">Fares</Link>
+        <Link href="/last-trip" className="transition-opacity hover:opacity-80">Last Trip</Link>
         <Link href="/first-timer" className="transition-opacity hover:opacity-80">First Timer Guide</Link>
       </div>
     </nav>
