@@ -16,12 +16,16 @@ Built for the **Philippine Collegiate HackFest 2026** under the Sustainable Mobi
 
 ## Features
 
-- 🗺️ **Route Finder** — step-by-step jeepney and UV Express guides
-- 🛡️ **AI Safety Ratings** — Gemini classifies reviews into Safe, Caution, Unsafe
-- ⏰ **Last Trip Tracker** — community-reported last departure times
-- 💰 **Fare Board** — current fares with 20% student discount
-- 📖 **First Timer Guide** — plain-language commute guide for new students
-- 🚨 **Report a Concern** — Gemini-screened safety reports
+| Feature | Description |
+|---|---|
+| 🗺️ Route Finder | Step-by-step jeepney and UV Express guides with multiple route options |
+| 🛡️ AI Safety Ratings | Gemini classifies student reviews into Safe, Caution, or Unsafe |
+| ⏰ Last Trip Tracker | Community-reported last departure times with student confirmations |
+| 💰 Fare Board | Current fares with 20% student discount as mandated by law |
+| 📖 First Timer Guide | Plain-language commute guide for students new to Manila |
+| 🚨 Report a Concern | Gemini-screened safety reports published after AI review |
+| 🗺️ Interactive Map | MapLibre GL map showing route paths, stop dots, and safety zones |
+| 🔀 Multiple Routes | Compare routes by fare, time, safety score, and transfers |
 
 ---
 
@@ -31,6 +35,7 @@ Built for the **Philippine Collegiate HackFest 2026** under the Sustainable Mobi
 |---|---|
 | Framework | Next.js 15 + React |
 | Styling | Tailwind CSS |
+| Map | MapLibre GL + react-map-gl + OpenFreeMap tiles |
 | Database | Supabase — coming soon |
 | AI | Google Gemini API — coming soon |
 | Hosting | Vercel |
@@ -65,7 +70,7 @@ DATABASE_URL=coming_soon
 GEMINI_API_KEY=coming_soon
 ```
 
-> Never commit `.env.local` to GitHub. It is in `.gitignore`.
+> Never commit `.env.local` to GitHub. It is already in `.gitignore`.
 
 ---
 
@@ -75,23 +80,26 @@ GEMINI_API_KEY=coming_soon
 safe-route-ph/
 ├── app/
 │   ├── api/
-│   │   ├── gemini/route.js       ← Gemini AI endpoint
-│   │   ├── reports/route.js      ← Reports API
-│   │   └── routes/route.js       ← Routes search API
+│   │   ├── gemini/route.js         ← Gemini AI endpoint
+│   │   ├── reports/route.js        ← Reports API
+│   │   └── routes/route.js         ← Routes search API
 │   ├── components/
-│   │   └── Navbar.jsx            ← Global navbar
+│   │   ├── Navbar.jsx              ← Global navbar
+│   │   └── RouteMap.jsx            ← MapLibre interactive map
 │   ├── fares/
-│   │   └── page.jsx              ← Fare Board page
+│   │   └── page.jsx                ← Fare Board page
 │   ├── first-timer/
-│   │   └── page.jsx              ← First Timer Guide page
+│   │   └── page.jsx                ← First Timer Guide page
+│   ├── last-trip/
+│   │   └── page.jsx                ← Last Trip Tracker page
 │   ├── route-result/
-│   │   └── page.jsx              ← Route Result page
+│   │   └── page.jsx                ← Route Result with map
 │   ├── safety/
-│   │   └── page.jsx              ← Safety Reports page
-│   ├── globals.css               ← Global styles
-│   ├── layout.jsx                ← Root layout
-│   └── page.jsx                  ← Homepage
-└── public/                       ← Static assets
+│   │   └── page.jsx                ← Safety Reports page
+│   ├── globals.css                 ← Global styles
+│   ├── layout.jsx                  ← Root layout
+│   └── page.jsx                    ← Homepage with split search
+└── public/                         ← Static assets
 ```
 
 ### Where things go
@@ -101,6 +109,7 @@ safe-route-ph/
 | New page | `app/your-page/page.jsx` |
 | Reusable component | `app/components/YourComponent.jsx` |
 | API endpoint | `app/api/your-endpoint/route.js` |
+| Map component | `app/components/RouteMap.jsx` |
 | Global style | `app/globals.css` |
 | Image or icon | `public/` |
 
@@ -113,6 +122,7 @@ safe-route-ph/
 - Add `'use client'` at the top of every page and component file
 - Use **Tailwind CSS** for all styling — no inline styles, no external UI libraries
 - Use **Next.js `Link`** for all internal navigation — never plain `<a>` tags
+- Use **dynamic import with `ssr: false`** for the RouteMap component
 - Keep components small and focused — one component does one thing
 - Use descriptive variable names — `routeData` not `d`, `isMenuOpen` not `x`
 
@@ -140,6 +150,7 @@ Always use these exact hex values with Tailwind's arbitrary value syntax `bg-[#h
 | Orange | `#EA580C` | Overcharging badge |
 | Purple | `#7C3AED` | Harassment badge |
 | Green | `#16A34A` | Safe badge, success |
+| Amber | `#EA580C` | Last Trip Soon badge |
 
 ---
 
@@ -166,23 +177,24 @@ type(scope): short description
 ### Scopes
 
 ```
-navbar  home  route-finder  route-result
-safety  fares  first-timer  reports  gemini
-supabase  readme  deps
+navbar  home  route-finder  route-result  map
+safety  fares  first-timer  last-trip
+reports  gemini  supabase  readme  deps
 ```
 
 ### Good ✅
 
 ```bash
-feat(route-finder): add search bar with school and destination inputs
+feat(route-finder): add search bar with split screen transition
+feat(map): add maplibre interactive map with route polylines
+feat(last-trip): add last trip tracker page with report form
 fix(navbar): fix mobile menu not closing on link click
 style(home): update hero section background and font size
-docs(readme): add color palette to contributor guidelines
-chore(deps): install supabase-js and generative-ai
+docs(readme): update folder structure with new pages
+chore(deps): install maplibre-gl and react-map-gl
 feat(gemini): add safety report classification prompt
 fix(reports): fix approved reports not showing on route page
-feat(fare-board): add recently changed flag for updated fares
-refactor(navbar): simplify mobile menu toggle logic
+feat(route-result): add multiple route comparison cards
 ```
 
 ### Bad ❌
@@ -224,11 +236,13 @@ feature/route-finder
 feature/safety-ratings
 feature/last-trip-tracker
 feature/fare-board
+feature/interactive-map
+feature/multiple-routes
 fix/navbar-mobile-menu
-fix/gemini-response-parsing
+fix/maplibre-ssr-error
 style/homepage-hero
 docs/update-readme
-chore/tailwind-config
+chore/install-maplibre
 ```
 
 ### Bad ❌
@@ -259,23 +273,28 @@ gabriels-changes
 - Write a clear description — what changed and why
 - Do not touch files unrelated to your change
 - Never commit `node_modules`, `.env.local`, or build output
+- Map components must use `dynamic import` with `ssr: false`
 
 ---
 
 ## Roadmap
 
 - [x] Project setup with Next.js and Tailwind
-- [x] Homepage with route search bar
+- [x] Homepage with split screen search
+- [x] Navbar with all page links
 - [x] First Timer Guide page
-- [ ] Route Result page
-- [ ] Safety Reports page
-- [ ] Fare Board page
+- [x] Safety Reports page with report form
+- [x] Last Trip Tracker page
+- [x] Fare Board page
+- [x] Route Result page with step by step guide
+- [x] Interactive MapLibre map with route polylines
+- [x] Multiple route comparison cards
 - [ ] Supabase database integration
-- [ ] Gemini AI safety ratings
-- [ ] Last Trip Tracker
-- [ ] Report a Concern with Gemini screening
+- [ ] Gemini AI safety report classification
+- [ ] Gemini AI route suggestion fallback
+- [ ] Real route data from student submissions
 - [ ] PWA mobile support
-- [ ] Expand to UST, FEU, PUP routes
+- [ ] Expand to UST, FEU, PUP, Ateneo routes
 
 ---
 
