@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { popularSchools } from '../data/schools';
+import { philippineSchools, popularSchools } from '../data/schools';
 
 export default function SearchWidget() {
   const router = useRouter();
@@ -81,6 +81,7 @@ export default function SearchWidget() {
               onFocus={() => setActiveField('from')}
               placeholder="e.g. Adamson University"
               aria-label="Origin school"
+              list="philippine-school-list"
               className="w-full bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-400"
             />
           </label>
@@ -110,10 +111,17 @@ export default function SearchWidget() {
               onFocus={() => setActiveField('to')}
               placeholder="e.g. UP Diliman"
               aria-label="Destination school"
+              list="philippine-school-list"
               className="w-full bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-400"
             />
           </label>
         </div>
+
+        <datalist id="philippine-school-list">
+          {philippineSchools.map((school) => (
+            <option key={school} value={school} />
+          ))}
+        </datalist>
 
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap gap-2">
@@ -138,7 +146,7 @@ export default function SearchWidget() {
         </div>
 
         <p className="mt-3 text-xs text-slate-500">
-          Tap a campus chip to fill the currently active field.
+          Start typing to see PH schools in autocomplete, or tap a campus chip to fill the active field.
         </p>
 
         {error && (
