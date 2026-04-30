@@ -1,11 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const navItems = [
-  { href: '/', label: 'Routes' },
   { href: '/safety', label: 'Safety' },
   { href: '/fares', label: 'Fares' },
   { href: '/last-trip', label: 'Last Trip' },
@@ -16,10 +15,23 @@ export default function Navbar() {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
 
+  useEffect(() => {
+    if (!menuOpen) return
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setMenuOpen(false)
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [menuOpen])
+
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-slate-950/90 backdrop-blur-xl">
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        <Link href="/" className="group flex items-center gap-3">
+        <Link href="/" onClick={() => setMenuOpen(false)} className="group flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#6EE7FF,#3B82F6)] text-sm font-black tracking-tight text-slate-950 shadow-[0_12px_30px_rgba(59,130,246,0.35)] transition-transform duration-300 group-hover:scale-105">
             SR
           </span>
@@ -35,12 +47,13 @@ export default function Navbar() {
 
         <div className="hidden items-center gap-2 xl:flex">
           {navItems.map((item) => {
-            const isActive = item.href === '/' ? pathname === '/' : pathname?.startsWith(item.href)
+            const isActive = pathname?.startsWith(item.href)
 
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                  onClick={() => setMenuOpen(false)}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
                   isActive
                     ? 'bg-white text-slate-950 shadow-[0_10px_24px_rgba(255,255,255,0.12)]'
@@ -63,9 +76,18 @@ export default function Navbar() {
             aria-label="Toggle navigation menu"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 6h16" />
-              <path d="M4 12h16" />
-              <path d="M4 18h16" />
+              {menuOpen ? (
+                <>
+                  <path d="m6 6 12 12" />
+                  <path d="m18 6-12 12" />
+                </>
+              ) : (
+                <>
+                  <path d="M4 6h16" />
+                  <path d="M4 12h16" />
+                  <path d="M4 18h16" />
+                </>
+              )}
             </svg>
           </button>
         </div>
@@ -78,13 +100,13 @@ export default function Navbar() {
               Navigate
             </p>
             <p className="px-2 text-sm text-slate-300">
-              Jump to the core tools or open the route search.
+              Jump to the core commute tools.
             </p>
           </div>
 
           <div className="grid gap-2">
             {navItems.map((item) => {
-              const isActive = item.href === '/' ? pathname === '/' : pathname?.startsWith(item.href)
+              const isActive = pathname?.startsWith(item.href)
 
               return (
                 <Link
@@ -104,17 +126,17 @@ export default function Navbar() {
             })}
           </div>
 
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Link
-              href="/"
-              onClick={() => setMenuOpen(false)}
-              className="rounded-2xl bg-cyan-400 px-4 py-3 text-center text-sm font-semibold text-slate-950 shadow-[0_12px_28px_rgba(34,211,238,0.22)] transition-transform hover:scale-[1.01] sm:col-span-2"
-            >
-              Search route
-            </Link>
-          </div>
         </div>
       </div>
+
+      {menuOpen && (
+        <button
+          type="button"
+          className="fixed inset-0 z-[-1] bg-slate-950/30 xl:hidden"
+          aria-label="Close menu overlay"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
     </header>
   )
 }
