@@ -3,17 +3,24 @@
 const routeLegs = [
   {
     label: 'Leg 1',
-    title: 'Adamson University → Philcoa',
-    mode: 'Bus / jeep transfer',
-    fare: '₱35–60',
-    note: 'Main leg depending on traffic and operator route.',
+    title: 'Adamson University → LRT-1 station',
+    mode: 'Jeep / short ride to the rail line',
+    fare: '₱13–20',
+    note: 'Start with the closest LRT-1 access point used by the chosen route.',
   },
   {
     label: 'Leg 2',
-    title: 'Philcoa → UP Diliman campus',
-    mode: 'Campus jeep',
-    fare: '₱6.50',
-    note: 'Student fare commonly used for the final campus entry.',
+    title: 'LRT-1 → Recto transfer to LRT-2',
+    mode: 'Rail transfer',
+    fare: 'Rail fare matrix',
+    note: 'Use the current LRT fare schedule for the line-to-line ride.',
+  },
+  {
+    label: 'Leg 3',
+    title: 'LRT-2 Katipunan → UP Diliman',
+    mode: 'Jeep / campus shuttle',
+    fare: '₱6.50–15',
+    note: 'This is the final student-friendly campus connection.',
   },
 ]
 
@@ -29,8 +36,8 @@ export default function RouteResult() {
             Adamson University → UP Diliman
           </h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300 sm:text-base">
-            A student-verified route guide that shows the full two-leg trip, the transfer point,
-            and the estimated 2026 fare matrix.
+            A student-verified route guide that shows the full rail-transfer path, the transfer point,
+            and the 2026 fare matrix by leg.
           </p>
 
           <div className="mt-5 flex flex-wrap gap-2">
@@ -55,7 +62,7 @@ export default function RouteResult() {
               </div>
               <div className="rounded-2xl bg-slate-50 px-4 py-3 text-right">
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Estimated total</p>
-                <p className="text-2xl font-black text-slate-950">₱41.50–66.50</p>
+                  <p className="text-2xl font-black text-slate-950">₱25.50–55.00*</p>
               </div>
             </div>
 
@@ -90,8 +97,8 @@ export default function RouteResult() {
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-700">Verification</p>
               <h3 className="mt-1 text-xl font-bold text-slate-950">Student-verified fare matrix</h3>
               <p className="mt-3 text-sm leading-6 text-slate-600">
-                The first leg is tracked as a range because the ride can vary by operator and traffic.
-                The second leg is a fixed campus jeep fare.
+                The route is broken into exact legs so the user sees the rail transfer separately from
+                the final jeep connection. The total stays transparent because each leg is shown on its own.
               </p>
               <div className="mt-4 grid gap-3 rounded-2xl bg-white p-4 shadow-sm">
                 <div className="flex items-center justify-between gap-3">

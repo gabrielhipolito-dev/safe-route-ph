@@ -3,12 +3,16 @@
 const fareRows = [
   {
     route: 'Adamson University → UP Diliman',
-    mode: 'Multi-leg student route',
-    regular: '₱41.50–₱66.50',
-    student: '₱35.50–₱60.50',
+    mode: 'LRT-1 → LRT-2 → jeep route',
+    regular: '₱25.50–₱55.00',
+    student: '₱22.50–₱49.50',
     updated: 'Apr 30, 2026',
     status: 'Student verified',
-    breakdown: ['Adamson → Philcoa: ₱35–60', 'Philcoa → UP Campus jeep: ₱6.50'],
+    breakdown: [
+      'Adamson → closest LRT-1 access point: ₱13–20',
+      'LRT-1 to Recto, transfer to LRT-2, then Katipunan: rail fare matrix',
+      'Katipunan → UP Diliman campus jeep: ₱6.50–15',
+    ],
   },
   {
     route: 'UST → SM Manila',
@@ -136,7 +140,7 @@ export default function FaresPage() {
                   <p className="text-xs uppercase tracking-[0.18em] text-slate-400 md:hidden">Student Fare</p>
                   <p className="text-lg font-semibold text-cyan-700">{row.student}</p>
                   {index === 0 && (
-                    <p className="mt-1 text-xs font-medium text-slate-500">Includes the Adamson → Philcoa + Philcoa → UP split</p>
+                    <p className="mt-1 text-xs font-medium text-slate-500">Shows the LRT-1, LRT-2, and jeep legs separately</p>
                   )}
                 </div>
 
@@ -174,8 +178,8 @@ export default function FaresPage() {
               </span>
             </div>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Each result can show transfer legs, student fares, and a verification trail so users can see
-              whether the trip was confirmed by other students, updated fares, or a recently changed operator price.
+              Each result shows transfer legs, student fares, and a verification trail so users can see
+              the actual route structure instead of a vague one-line estimate.
             </p>
           </article>
 
