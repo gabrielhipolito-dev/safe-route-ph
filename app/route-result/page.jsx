@@ -28,9 +28,13 @@ export default async function RouteResult({ searchParams }) {
               <h1 className="mt-4 text-2xl font-black tracking-tight text-white sm:text-3xl md:text-4xl leading-tight">
                 {from && to ? (
                   <span className="flex flex-wrap items-center gap-2 sm:gap-3">
-                    <span className="text-cyan-200">{from}</span>
+                    <span className="text-cyan-200">
+                      {/^-?\d+\.\d+,-?\d+\.\d+$/.test((from || '').trim()) ? '📍 Current Location' : from}
+                    </span>
                     <span className="text-slate-500">→</span>
-                    <span className="text-cyan-100">{to}</span>
+                    <span className="text-cyan-100">
+                      {/^-?\d+\.\d+,-?\d+\.\d+$/.test((to || '').trim()) ? '📍 Current Location' : to}
+                    </span>
                   </span>
                 ) : (
                   'School-to-School Commute'

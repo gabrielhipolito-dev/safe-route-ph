@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 export default function RouteSelector({ allRoutes, origin, destination, apiKey }) {
   const [activeIdx, setActiveIdx] = useState(0)
+  const [isEnlarged, setIsEnlarged] = useState(false)
 
   if (!allRoutes || allRoutes.length === 0) return null
 
@@ -94,18 +95,42 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey }
           </div>
         </div>
 
-        {/* Directly Integrated Live Google Map */}
+        {/* Directly Integrated Live Google Map with Enlarge Option */}
         {apiKey && origin && destination && (
-          <div className="rounded-[24px] border border-cyan-100/70 bg-slate-50 overflow-hidden shadow-sm aspect-video w-full min-h-[320px]">
-            <iframe
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              loading="lazy"
-              allowFullScreen
-              referrerPolicy="no-referrer-when-downgrade"
-              src={`https://www.google.com/maps/embed/v1/directions?key=${apiKey}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=transit`}
-            />
+          <div className="flex flex-col gap-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 border border-slate-200/60 p-3 rounded-2xl">
+              <div className="flex flex-col">
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-700">Live Navigation Map</span>
+                <span className="text-[11px] text-slate-500 font-medium">Shows exactly how to commute on the transit route</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsEnlarged(!isEnlarged)}
+                className="inline-flex items-center justify-center rounded-xl bg-white border border-slate-200/80 hover:bg-slate-50 px-3.5 py-1.5 text-xs font-bold text-slate-700 transition-colors shadow-sm cursor-pointer hover:border-cyan-300"
+              >
+                {isEnlarged ? 'Shrink Map ⤬' : 'Enlarge Map ⤢'}
+              </button>
+            </div>
+
+            <div className={`rounded-[24px] border border-cyan-100/70 bg-slate-50 overflow-hidden shadow-sm transition-all duration-300 w-full ${isEnlarged ? 'h-[620px] scale-[1.01]' : 'aspect-video min-h-[320px]'}`}>
+              <iframe
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
+                src={`https://www.google.com/maps/embed/v1/directions?key=${apiKey}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=transit`}
+              />
+            </div>
+
+            {/* In-app helpful troubleshooting instructions alert/tip */}
+            <div className="rounded-xl border border-amber-200/80 bg-amber-50/40 p-3 shadow-sm backdrop-blur">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-amber-800 mb-1">Authorization Troubleshooting Tip</p>
+              <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                If the map shows an authorization error, make sure to enable the <strong>Maps Embed API</strong> under the enabled APIs list in your Google Cloud Console for this key.
+              </p>
+            </div>
           </div>
         )}
 
