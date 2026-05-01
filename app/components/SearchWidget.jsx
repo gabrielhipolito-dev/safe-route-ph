@@ -47,7 +47,7 @@ export default function SearchWidget() {
 
     if (activeField === 'from') {
       setFrom(school);
-      if (!to) setActiveField('to'); 
+      if (!to) setActiveField('to');
     } else {
       setTo(school);
       if (!from) setActiveField('from');

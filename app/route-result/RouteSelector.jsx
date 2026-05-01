@@ -4,19 +4,19 @@ import { useState } from 'react'
 
 const formatArrivalTime = (durationText = '') => {
   if (!durationText) return 'N/A'
-  
+
   const hoursMatch = durationText.match(/(\d+)\s*hr/i) || durationText.match(/(\d+)\s*hour/i)
   const minsMatch = durationText.match(/(\d+)\s*min/i)
-  
+
   let totalMins = 0
   if (hoursMatch) totalMins += parseInt(hoursMatch[1]) * 60
   if (minsMatch) totalMins += parseInt(minsMatch[1])
-  
+
   if (totalMins === 0) return 'N/A'
-  
+
   const now = new Date()
   now.setMinutes(now.getMinutes() + totalMins)
-  
+
   return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
 }
 
@@ -61,7 +61,7 @@ const getTrainIntermediateStations = (departure, arrival) => {
     } else {
       sliced = stopsList.slice(toIdx, fromIdx + 1).reverse()
     }
-    
+
     return sliced.map((stop, i) => ({
       name: stop,
       estMinutes: i * 2
@@ -90,16 +90,14 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey }
           <button
             key={rIndex}
             onClick={() => setActiveIdx(rIndex)}
-            className={`flex flex-col gap-2 p-4 rounded-[24px] transition-all duration-300 text-left border ${
-              activeIdx === rIndex
+            className={`flex flex-col gap-2 p-4 rounded-[24px] transition-all duration-300 text-left border ${activeIdx === rIndex
                 ? 'bg-slate-900 border-slate-800 text-white shadow-[0_16px_36px_rgba(15,23,42,0.14)] font-bold scale-[1.01]'
                 : 'bg-white border-slate-200/60 hover:border-slate-300 hover:bg-slate-50/50 text-slate-800 font-medium'
-            }`}
+              }`}
           >
             <div className="flex items-center justify-between gap-2 w-full">
-              <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.16em] ${
-                activeIdx === rIndex ? 'bg-cyan-400 text-slate-950' : 'bg-slate-100 text-slate-600'
-              }`}>
+              <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.16em] ${activeIdx === rIndex ? 'bg-cyan-400 text-slate-950' : 'bg-slate-100 text-slate-600'
+                }`}>
                 Option {rIndex + 1} {rIndex === 0 && '• Best'}
               </span>
               <span className={`text-sm font-black tracking-tight ${activeIdx === rIndex ? 'text-white' : 'text-slate-950'}`}>
