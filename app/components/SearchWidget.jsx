@@ -47,11 +47,31 @@ export default function SearchWidget() {
 
     if (activeField === 'from') {
       setFrom(school);
-      if (!to) setActiveField('to'); // Switch focus field visually/logically
+      if (!to) setActiveField('to'); 
     } else {
       setTo(school);
       if (!from) setActiveField('from');
     }
+  };
+
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    setError('Fetching current location...');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const coordsString = `${latitude},${longitude}`;
+        setFrom(coordsString);
+        setError('');
+      },
+      (err) => {
+        setError(err.message || 'Error accessing geolocation.');
+      }
+    );
   };
 
   return (
@@ -72,8 +92,18 @@ export default function SearchWidget() {
         </div>
 
         <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr] md:items-center">
-          <label className={`rounded-2xl border px-4 py-3 transition ${activeField === 'from' ? 'border-cyan-500 bg-cyan-50 shadow-sm' : 'border-slate-200 bg-slate-50'}`}>
-            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Origin</span>
+          <label className={`rounded-2xl border px-4 py-3 transition flex flex-col justify-between min-h-[82px] ${activeField === 'from' ? 'border-cyan-500 bg-cyan-50 shadow-sm' : 'border-slate-200 bg-slate-50'}`}>
+            <div className="flex justify-between items-center w-full mb-1">
+              <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Origin</span>
+              <button
+                type="button"
+                onClick={handleUseCurrentLocation}
+                className="text-[10px] bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-700 px-2.5 py-0.5 rounded-full border border-cyan-500/20 font-bold transition-all flex items-center gap-1 cursor-pointer"
+                title="Use my current GPS location"
+              >
+                📍 Use My Location
+              </button>
+            </div>
             <input
               type="text"
               value={from}
@@ -102,7 +132,7 @@ export default function SearchWidget() {
             </button>
           </div>
 
-          <label className={`rounded-2xl border px-4 py-3 transition ${activeField === 'to' ? 'border-cyan-500 bg-cyan-50 shadow-sm' : 'border-slate-200 bg-slate-50'}`}>
+          <label className={`rounded-2xl border px-4 py-3 transition flex flex-col justify-between min-h-[82px] ${activeField === 'to' ? 'border-cyan-500 bg-cyan-50 shadow-sm' : 'border-slate-200 bg-slate-50'}`}>
             <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Destination</span>
             <input
               type="text"
@@ -146,7 +176,7 @@ export default function SearchWidget() {
         </div>
 
         <p className="mt-3 text-xs text-slate-500">
-          Start typing to see PH schools in autocomplete, or tap a campus chip to fill the active field.
+          Start typing to see PH schools in autocomplete, tap a campus chip, or use the pin button to pull your exact location.
         </p>
 
         {error && (

@@ -25,12 +25,12 @@ export default async function RouteResult({ searchParams }) {
                 <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
                 Live Commute Routing
               </span>
-              <h1 className="mt-4 text-3xl font-black tracking-tight text-white sm:text-4xl md:text-5xl">
+              <h1 className="mt-4 text-2xl font-black tracking-tight text-white sm:text-3xl md:text-4xl leading-tight">
                 {from && to ? (
-                  <span className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
-                    <span className="text-cyan-200 line-clamp-1">{from}</span>
-                    <span className="text-slate-500 hidden sm:inline">→</span>
-                    <span className="text-cyan-100 line-clamp-1">{to}</span>
+                  <span className="flex flex-wrap items-center gap-2 sm:gap-3">
+                    <span className="text-cyan-200">{from}</span>
+                    <span className="text-slate-500">→</span>
+                    <span className="text-cyan-100">{to}</span>
                   </span>
                 ) : (
                   'School-to-School Commute'
@@ -139,7 +139,7 @@ export default async function RouteResult({ searchParams }) {
               {navigation && (
                 <div className="grid gap-6">
                   {navigation.allRoutes && navigation.allRoutes.length > 0 ? (
-                    <RouteSelector allRoutes={navigation.allRoutes} />
+                    <RouteSelector allRoutes={navigation.allRoutes} origin={from} destination={to} apiKey={process.env.GOOGLE_MAPS_API_KEY} />
                   ) : (
                     <article className="rounded-[32px] border border-slate-200 bg-white p-5 sm:p-7 shadow-[0_24px_50px_rgba(15,23,42,0.08)]">
                       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

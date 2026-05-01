@@ -222,11 +222,32 @@ const getGoogleNavigation = async (from, to) => {
     if (!response.ok) return { error: `HTTP ${response.status}: ${response.statusText}` }
 
     const payload = await response.json()
-    if (payload.status !== 'OK') {
-      return { error: payload.error_message || payload.status }
+    if (payload.status === 'OK' && payload.routes && payload.routes.length > 0) {
+      return mapGoogleNavigation(payload)
     }
 
-    return mapGoogleNavigation(payload)
+    // Fallback: Try getting a walking route if no transit route is found
+    url.searchParams.set('mode', 'walking')
+    url.searchParams.delete('departure_time')
+    url.searchParams.set('alternatives', 'true')
+
+    const walkResponse = await fetch(url.toString(), { cache: 'no-store' })
+    if (!walkResponse.ok) return { error: `HTTP ${walkResponse.status}: ${walkResponse.statusText}` }
+
+    const walkPayload = await walkResponse.json()
+    if (walkPayload.status === 'OK' && walkPayload.routes && walkPayload.routes.length > 0) {
+      const mapped = mapGoogleNavigation(walkPayload)
+      if (mapped && mapped.allRoutes) {
+        mapped.allRoutes = mapped.allRoutes.map((r, i) => ({
+          ...r,
+          summary: r.summary ? `${r.summary} (Walking)` : `Walking Option ${i + 1}`
+        }))
+        if (mapped.summary) mapped.summary = `${mapped.summary} (Walking)`
+      }
+      return mapped
+    }
+
+    return { error: walkPayload.error_message || walkPayload.status || 'No transit or walking route found.' }
   } catch (err) {
     return { error: err.message || 'An error occurred during transit lookup.' }
   }

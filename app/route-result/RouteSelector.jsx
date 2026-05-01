@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-export default function RouteSelector({ allRoutes }) {
+export default function RouteSelector({ allRoutes, origin, destination, apiKey }) {
   const [activeIdx, setActiveIdx] = useState(0)
 
   if (!allRoutes || allRoutes.length === 0) return null
@@ -93,6 +93,21 @@ export default function RouteSelector({ allRoutes }) {
             </div>
           </div>
         </div>
+
+        {/* Directly Integrated Live Google Map */}
+        {apiKey && origin && destination && (
+          <div className="rounded-[24px] border border-cyan-100/70 bg-slate-50 overflow-hidden shadow-sm aspect-video w-full min-h-[320px]">
+            <iframe
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              loading="lazy"
+              allowFullScreen
+              referrerPolicy="no-referrer-when-downgrade"
+              src={`https://www.google.com/maps/embed/v1/directions?key=${apiKey}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=transit`}
+            />
+          </div>
+        )}
 
         {/* Turn-by-turn steps */}
         <div className="grid gap-2.5">
