@@ -84,24 +84,48 @@ export default async function RouteResult({ searchParams }) {
             {searchResult.nearestStations && (searchResult.nearestStations.origin || searchResult.nearestStations.destination) && (
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 {searchResult.nearestStations.origin && (
-                  <div className="rounded-2xl bg-white p-4 border border-slate-100 shadow-sm">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-600">Origin near transit</p>
-                    <p className="text-base font-bold text-slate-900 mt-1">
-                      {searchResult.nearestStations.origin?.name || 'No station found'}
-                    </p>
-                    {searchResult.nearestStations.origin?.vicinity && (
-                      <p className="text-xs text-slate-500 mt-1 font-medium">{searchResult.nearestStations.origin.vicinity}</p>
+                  <div className="rounded-2xl bg-white p-4 border border-slate-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-600">Origin near transit</p>
+                      <p className="text-base font-bold text-slate-900 mt-1">
+                        {searchResult.nearestStations.origin?.name || 'No station found'}
+                      </p>
+                      {searchResult.nearestStations.origin?.vicinity && (
+                        <p className="text-xs text-slate-500 mt-1 font-medium">{searchResult.nearestStations.origin.vicinity}</p>
+                      )}
+                    </div>
+                    {searchResult.nearestStations.origin?.name && (
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(from)}&destination=${encodeURIComponent(searchResult.nearestStations.origin.name)}&travelmode=walking`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-3 inline-flex items-center justify-center rounded-xl bg-cyan-50 hover:bg-cyan-100 px-3.5 py-2 text-xs font-bold tracking-wide text-cyan-700 transition-colors border border-cyan-100/60"
+                      >
+                        Walking Guide to Station ↗
+                      </a>
                     )}
                   </div>
                 )}
                 {searchResult.nearestStations.destination && (
-                  <div className="rounded-2xl bg-white p-4 border border-slate-100 shadow-sm">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-600">Destination near transit</p>
-                    <p className="text-base font-bold text-slate-900 mt-1">
-                      {searchResult.nearestStations.destination?.name || 'No station found'}
-                    </p>
-                    {searchResult.nearestStations.destination?.vicinity && (
-                      <p className="text-xs text-slate-500 mt-1 font-medium">{searchResult.nearestStations.destination.vicinity}</p>
+                  <div className="rounded-2xl bg-white p-4 border border-slate-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-600">Destination near transit</p>
+                      <p className="text-base font-bold text-slate-900 mt-1">
+                        {searchResult.nearestStations.destination?.name || 'No station found'}
+                      </p>
+                      {searchResult.nearestStations.destination?.vicinity && (
+                        <p className="text-xs text-slate-500 mt-1 font-medium">{searchResult.nearestStations.destination.vicinity}</p>
+                      )}
+                    </div>
+                    {searchResult.nearestStations.destination?.name && (
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(searchResult.nearestStations.destination.name)}&destination=${encodeURIComponent(to)}&travelmode=walking`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-3 inline-flex items-center justify-center rounded-xl bg-cyan-50 hover:bg-cyan-100 px-3.5 py-2 text-xs font-bold tracking-wide text-cyan-700 transition-colors border border-cyan-100/60"
+                      >
+                        Walking Guide to End ↗
+                      </a>
                     )}
                   </div>
                 )}
@@ -203,30 +227,54 @@ export default async function RouteResult({ searchParams }) {
                 </div>
               </article>
 
-              {nearestStations && (nearestStations.origin || nearestStations.destination) && (
+               {nearestStations && (nearestStations.origin || nearestStations.destination) && (
                 <article className="rounded-[32px] border border-slate-200 bg-white p-5 sm:p-6 shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
                   <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-cyan-700">Proximity stations</p>
                   <h3 className="mt-1 text-xl font-black text-slate-950">Nearest points</h3>
                   <div className="mt-4 grid gap-3 rounded-2xl bg-slate-50 p-4 border border-slate-100">
                     {nearestStations.origin && (
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Origin station</p>
-                        <p className="text-base font-bold text-slate-950 mt-1">
-                          {nearestStations.origin?.name || 'No station found'}
-                        </p>
-                        {nearestStations.origin?.vicinity && (
-                          <p className="text-xs text-slate-500 mt-0.5 font-medium">{nearestStations.origin.vicinity}</p>
+                      <div className="flex flex-col justify-between min-h-[90px]">
+                        <div>
+                          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Origin station</p>
+                          <p className="text-base font-bold text-slate-950 mt-1">
+                            {nearestStations.origin?.name || 'No station found'}
+                          </p>
+                          {nearestStations.origin?.vicinity && (
+                            <p className="text-xs text-slate-500 mt-0.5 font-medium">{nearestStations.origin.vicinity}</p>
+                          )}
+                        </div>
+                        {nearestStations.origin?.name && (
+                          <a
+                            href={`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(from)}&destination=${encodeURIComponent(nearestStations.origin.name)}&travelmode=walking`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-3 inline-flex items-center justify-center rounded-xl bg-cyan-50 hover:bg-cyan-100 px-3 py-1.5 text-xs font-bold tracking-wide text-cyan-700 transition-colors border border-cyan-100/60"
+                          >
+                            Get Walking Guide ↗
+                          </a>
                         )}
                       </div>
                     )}
                     {nearestStations.destination && (
-                      <div className="border-t border-slate-200/60 pt-3 mt-1">
-                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Destination station</p>
-                        <p className="text-base font-bold text-slate-950 mt-1">
-                          {nearestStations.destination?.name || 'No station found'}
-                        </p>
-                        {nearestStations.destination?.vicinity && (
-                          <p className="text-xs text-slate-500 mt-0.5 font-medium">{nearestStations.destination.vicinity}</p>
+                      <div className="border-t border-slate-200/60 pt-3 mt-1 flex flex-col justify-between min-h-[90px]">
+                        <div>
+                          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Destination station</p>
+                          <p className="text-base font-bold text-slate-950 mt-1">
+                            {nearestStations.destination?.name || 'No station found'}
+                          </p>
+                          {nearestStations.destination?.vicinity && (
+                            <p className="text-xs text-slate-500 mt-0.5 font-medium">{nearestStations.destination.vicinity}</p>
+                          )}
+                        </div>
+                        {nearestStations.destination?.name && (
+                          <a
+                            href={`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(nearestStations.destination.name)}&destination=${encodeURIComponent(to)}&travelmode=walking`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-3 inline-flex items-center justify-center rounded-xl bg-cyan-50 hover:bg-cyan-100 px-3 py-1.5 text-xs font-bold tracking-wide text-cyan-700 transition-colors border border-cyan-100/60"
+                          >
+                            Get Walking Guide ↗
+                          </a>
                         )}
                       </div>
                     )}
