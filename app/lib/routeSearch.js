@@ -54,41 +54,50 @@ const computeLegFare = (step) => {
 const mapGoogleNavigation = (payload) => {
   if (!payload?.routes?.length) return null
 
-  const route = payload.routes[0]
-  const leg = route.legs?.[0]
-  if (!leg) return null
+  const allRoutes = payload.routes.map((route, routeIndex) => {
+    const leg = route.legs?.[0]
+    if (!leg) return null
 
-  const steps = (leg.steps || []).map((step) => ({
-    instruction: stripHtml(step.html_instructions || ''),
-    mode: mapTravelMode(step),
-    duration: step.duration?.text || null,
-    distance: step.distance?.text || null,
-    departureStop: step.transit_details?.departure_stop?.name || null,
-    arrivalStop: step.transit_details?.arrival_stop?.name || null,
-    line: step.transit_details?.line?.short_name || step.transit_details?.line?.name || null,
-  }))
+    const steps = (leg.steps || []).map((step) => ({
+      instruction: stripHtml(step.html_instructions || ''),
+      mode: mapTravelMode(step),
+      duration: step.duration?.text || null,
+      distance: step.distance?.text || null,
+      departureStop: step.transit_details?.departure_stop?.name || null,
+      arrivalStop: step.transit_details?.arrival_stop?.name || null,
+      line: step.transit_details?.line?.short_name || step.transit_details?.line?.name || null,
+    }))
 
-  let calculatedRegularFare = 0
-  let calculatedStudentFare = 0
+    let calculatedRegularFare = 0
+    let calculatedStudentFare = 0
 
-  for (const step of steps) {
-    const legFare = computeLegFare(step)
-    calculatedRegularFare += legFare.regular
-    calculatedStudentFare += legFare.student
-  }
+    for (const step of steps) {
+      const legFare = computeLegFare(step)
+      calculatedRegularFare += legFare.regular
+      calculatedStudentFare += legFare.student
+    }
+
+    return {
+      provider: 'Google Maps Directions',
+      summary: route.summary || `Alternative Option ${routeIndex + 1}`,
+      distance: leg.distance?.text || null,
+      duration: leg.duration?.text || null,
+      totalFareText: route.fare?.text || null,
+      totalFareValue: route.fare?.value || null,
+      totalFareCurrency: route.fare?.currency || null,
+      originLocation: leg.start_location || null,
+      destinationLocation: leg.end_location || null,
+      steps,
+      calculatedRegularFare,
+      calculatedStudentFare,
+    }
+  }).filter(Boolean)
+
+  if (!allRoutes.length) return null
 
   return {
-    provider: 'Google Maps Directions',
-    distance: leg.distance?.text || null,
-    duration: leg.duration?.text || null,
-    totalFareText: route.fare?.text || null,
-    totalFareValue: route.fare?.value || null,
-    totalFareCurrency: route.fare?.currency || null,
-    originLocation: leg.start_location || null,
-    destinationLocation: leg.end_location || null,
-    steps,
-    calculatedRegularFare,
-    calculatedStudentFare,
+    ...allRoutes[0],
+    allRoutes,
   }
 }
 
@@ -203,7 +212,7 @@ const getGoogleNavigation = async (from, to) => {
   url.searchParams.set('origin', from)
   url.searchParams.set('destination', to)
   url.searchParams.set('mode', 'transit')
-  url.searchParams.set('alternatives', 'false')
+  url.searchParams.set('alternatives', 'true')
   url.searchParams.set('departure_time', 'now')
   url.searchParams.set('region', 'ph')
   url.searchParams.set('key', apiKey)
