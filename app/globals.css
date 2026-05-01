@@ -1,6 +1,13 @@
 @import "tailwindcss";
 
 @layer base {
+  :root {
+    --sr-surface: #f1f5f9;
+    --sr-text: #0b1f3a;
+    --sr-muted: #64748b;
+    --sr-focus: #06b6d4;
+  }
+
   * {
     margin: 0;
     padding: 0;
@@ -8,10 +15,27 @@
   }
 
   body {
-    background-color: #f1f5f9;
-    color: #0B1F3A;
+    background-color: var(--sr-surface);
+    color: var(--sr-text);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  button {
+    min-height: 44px;
+  }
+
+  input,
+  select,
+  textarea {
+    min-height: 44px;
   }
 
   a {

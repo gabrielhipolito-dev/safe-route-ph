@@ -1,0 +1,7 @@
+[
+  {
+    "key": "lrt1-fares",
+    "url": "https://www.lrta.gov.ph/fares.html",
+    "selector": "body"
+  }
+]

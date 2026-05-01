@@ -68,6 +68,7 @@ NEXT_PUBLIC_SUPABASE_URL=coming_soon
 NEXT_PUBLIC_SUPABASE_ANON_KEY=coming_soon
 DATABASE_URL=coming_soon
 GEMINI_API_KEY=coming_soon
+GOOGLE_MAPS_API_KEY=coming_soon
 ```
 
 > Never commit `.env.local` to GitHub. It is already in `.gitignore`.
