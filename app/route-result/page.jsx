@@ -50,6 +50,10 @@ export default async function RouteResult({ searchParams }) {
             <p className="mt-2 text-slate-700">
               {searchResult.error === 'origin_equals_destination'
                 ? 'Origin and destination are the same. Please enter two different schools.'
+                : searchResult.error === 'no_transit_route_found'
+                ? 'Google Directions did not return a transit route for this pair. We can still show nearby stations from Places below if available.'
+                : typeof searchResult.error === 'string'
+                ? searchResult.error
                 : 'Google Directions did not return a transit route for this pair. We can still show nearby stations from Places below if available.'}
             </p>
             {searchResult.nearestStations && (searchResult.nearestStations.origin || searchResult.nearestStations.destination) && (
@@ -87,8 +91,12 @@ export default async function RouteResult({ searchParams }) {
                   <h2 className="mt-1 text-xl font-bold text-slate-950">Route steps</h2>
                 </div>
                 <div className="rounded-2xl bg-slate-50 px-4 py-3 text-right">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Fare</p>
-                  <p className="text-sm font-semibold text-slate-900">{navigation?.totalFareText || 'Not provided by Google'}</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Estimated Fare</p>
+                  <p className="text-sm font-bold text-slate-900">
+                    {navigation?.totalFareText
+                      ? navigation.totalFareText
+                      : `₱${navigation?.calculatedRegularFare || 0} reg / ₱${navigation?.calculatedStudentFare || 0} stu`}
+                  </p>
                   <p className="mt-1 text-xs text-slate-500">{navigation?.duration || 'N/A'} • {navigation?.distance || 'N/A'}</p>
                 </div>
               </div>
@@ -133,10 +141,30 @@ export default async function RouteResult({ searchParams }) {
                     </div>
                   </div>
 
-                  {navigation.totalFareText && (
-                    <p className="mb-4 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-medium text-cyan-800">
-                      Google transit fare: {navigation.totalFareText}
-                    </p>
+                  {navigation && (
+                    <div className="mb-5 rounded-2xl border border-cyan-100 bg-cyan-50/50 p-4 shadow-sm backdrop-blur">
+                      <h4 className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-800">
+                        {navigation.totalFareText ? 'Google Transit Fare' : 'Estimated Transfer-Aware Fare Breakdown'}
+                      </h4>
+                      <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                        <div className="rounded-xl bg-white p-3 border border-slate-100">
+                          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Regular Fare</p>
+                          <p className="text-xl font-extrabold text-slate-900">
+                            {navigation.totalFareText || `₱${navigation.calculatedRegularFare || 0}`}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">Based on standard Philippine LTFRB fare rates</p>
+                        </div>
+                        <div className="rounded-xl bg-white p-3 border border-slate-100">
+                          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Student Fare (20% Off)</p>
+                          <p className="text-xl font-extrabold text-cyan-700">
+                            {navigation.totalFareText
+                              ? `₱${Math.round(parseFloat(navigation.totalFareText.replace(/[^\d.]/g, '')) * 0.8 || 0)}`
+                              : `₱${navigation.calculatedStudentFare || 0}`}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">Includes valid 20% student discount by law</p>
+                        </div>
+                      </div>
+                    </div>
                   )}
 
                   <div className="grid gap-2">

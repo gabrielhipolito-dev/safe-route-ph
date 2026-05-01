@@ -22,6 +22,35 @@ const mapTravelMode = (step) => {
   return mode
 }
 
+const computeLegFare = (step) => {
+  if (!step.mode || step.mode.toLowerCase() === 'walking') return { regular: 0, student: 0 }
+
+  const mode = step.mode.toLowerCase()
+  const distanceKm = step.distance ? parseFloat(step.distance.replace(/[^\d.]/g, '')) : 1
+
+  if (mode.includes('bus')) {
+    const baseRegular = 15
+    const perKm = 2.2
+    const totalRegular = baseRegular + Math.max(0, distanceKm - 4) * perKm
+    const totalStudent = totalRegular * 0.8
+    return { regular: Math.round(totalRegular), student: Math.round(totalStudent) }
+  }
+
+  if (mode.includes('tram') || mode.includes('train') || mode.includes('subway') || mode.includes('rail')) {
+    const baseRegular = 13
+    const perKm = 1.2
+    const totalRegular = baseRegular + distanceKm * perKm
+    const totalStudent = totalRegular * 0.8
+    return { regular: Math.round(totalRegular), student: Math.round(totalStudent) }
+  }
+
+  const baseRegular = 13
+  const perKm = 1.8
+  const totalRegular = baseRegular + Math.max(0, distanceKm - 4) * perKm
+  const totalStudent = totalRegular * 0.8
+  return { regular: Math.round(totalRegular), student: Math.round(totalStudent) }
+}
+
 const mapGoogleNavigation = (payload) => {
   if (!payload?.routes?.length) return null
 
@@ -39,6 +68,15 @@ const mapGoogleNavigation = (payload) => {
     line: step.transit_details?.line?.short_name || step.transit_details?.line?.name || null,
   }))
 
+  let calculatedRegularFare = 0
+  let calculatedStudentFare = 0
+
+  for (const step of steps) {
+    const legFare = computeLegFare(step)
+    calculatedRegularFare += legFare.regular
+    calculatedStudentFare += legFare.student
+  }
+
   return {
     provider: 'Google Maps Directions',
     distance: leg.distance?.text || null,
@@ -49,6 +87,8 @@ const mapGoogleNavigation = (payload) => {
     originLocation: leg.start_location || null,
     destinationLocation: leg.end_location || null,
     steps,
+    calculatedRegularFare,
+    calculatedStudentFare,
   }
 }
 
@@ -62,10 +102,12 @@ const getGeocodedLocation = async (address, apiKey) => {
 
   try {
     const response = await fetch(url.toString(), { cache: 'no-store' })
-    if (!response.ok) return null
+    if (!response.ok) return { error: `HTTP ${response.status}: ${response.statusText}` }
 
     const payload = await response.json()
-    if (payload.status !== 'OK') return null
+    if (payload.status !== 'OK') {
+      return { error: payload.error_message || payload.status }
+    }
 
     const location = payload.results?.[0]?.geometry?.location
     const formattedAddress = payload.results?.[0]?.formatted_address || null
@@ -76,13 +118,14 @@ const getGeocodedLocation = async (address, apiKey) => {
       lng: location.lng,
       formattedAddress,
     }
-  } catch {
-    return null
+  } catch (err) {
+    return { error: err.message || 'Error fetching geocode' }
   }
 }
 
 const getNearestTransitStation = async (location, apiKey) => {
-  if (!location || typeof location.lat !== 'number' || typeof location.lng !== 'number') {
+  if (!location || location.error) return null
+  if (typeof location.lat !== 'number' || typeof location.lng !== 'number') {
     return null
   }
 
@@ -94,10 +137,14 @@ const getNearestTransitStation = async (location, apiKey) => {
 
   try {
     const response = await fetch(url.toString(), { cache: 'no-store' })
-    if (!response.ok) return null
+    if (!response.ok) return { error: `HTTP ${response.status}: ${response.statusText}` }
 
     const payload = await response.json()
-    if (payload.status !== 'OK' || !payload.results?.length) return null
+    if (payload.status !== 'OK') {
+      return { error: payload.error_message || payload.status }
+    }
+
+    if (!payload.results?.length) return null
 
     const station = payload.results[0]
     return {
@@ -108,24 +155,30 @@ const getNearestTransitStation = async (location, apiKey) => {
       placeId: station.place_id || null,
       source: 'Google Places Nearby Search',
     }
-  } catch {
-    return null
+  } catch (err) {
+    return { error: err.message || 'Error fetching places' }
   }
 }
 
 const getNearestStationsForQuery = async (from, to) => {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY
-  if (!apiKey) return null
+  if (!apiKey) return { error: 'Missing GOOGLE_MAPS_API_KEY environment variable.' }
 
   const [fromLocation, toLocation] = await Promise.all([
     getGeocodedLocation(from, apiKey),
     getGeocodedLocation(to, apiKey),
   ])
 
+  if (fromLocation && fromLocation.error) return { error: fromLocation.error }
+  if (toLocation && toLocation.error) return { error: toLocation.error }
+
   const [originStation, destinationStation] = await Promise.all([
     getNearestTransitStation(fromLocation, apiKey),
     getNearestTransitStation(toLocation, apiKey),
   ])
+
+  if (originStation && originStation.error) return { error: originStation.error }
+  if (destinationStation && destinationStation.error) return { error: destinationStation.error }
 
   return {
     origin: originStation
@@ -143,7 +196,7 @@ const getNearestStationsForQuery = async (from, to) => {
 const getGoogleNavigation = async (from, to) => {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY
   if (!apiKey) {
-    return null
+    return { error: 'Missing GOOGLE_MAPS_API_KEY environment variable.' }
   }
 
   const url = new URL('https://maps.googleapis.com/maps/api/directions/json')
@@ -157,16 +210,16 @@ const getGoogleNavigation = async (from, to) => {
 
   try {
     const response = await fetch(url.toString(), { cache: 'no-store' })
-    if (!response.ok) return null
+    if (!response.ok) return { error: `HTTP ${response.status}: ${response.statusText}` }
 
     const payload = await response.json()
     if (payload.status !== 'OK') {
-      return null
+      return { error: payload.error_message || payload.status }
     }
 
     return mapGoogleNavigation(payload)
-  } catch {
-    return null
+  } catch (err) {
+    return { error: err.message || 'An error occurred during transit lookup.' }
   }
 }
 
@@ -190,6 +243,34 @@ export const getRouteSearchResult = async (from, to) => {
     getGoogleNavigation(from, to),
     getNearestStationsForQuery(from, to),
   ])
+
+  if (navigation && navigation.error) {
+    return {
+      from,
+      to,
+      route: null,
+      totals: null,
+      navigation: null,
+      nearestStations: null,
+      hasFareData: false,
+      hasNavigation: false,
+      error: navigation.error,
+    }
+  }
+
+  if (nearestStations && nearestStations.error) {
+    return {
+      from,
+      to,
+      route: null,
+      totals: null,
+      navigation: null,
+      nearestStations: null,
+      hasFareData: false,
+      hasNavigation: false,
+      error: nearestStations.error,
+    }
+  }
 
   // Prefer parsed Google Directions transit steps.
   if (navigation && navigation.steps && navigation.steps.length) {
