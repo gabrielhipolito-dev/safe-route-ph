@@ -70,6 +70,11 @@ export default async function RouteResult({ searchParams }) {
                 </div>
               </div>
             )}
+            {searchResult.nearestStations && !searchResult.nearestStations.origin && !searchResult.nearestStations.destination && (
+              <p className="mt-4 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+                Google Geocoding and Places are enabled in code, but the current API key is not returning station results. Enable Geocoding API and Places API on the key, then try again.
+              </p>
+            )}
           </article>
         ) : (
           <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">

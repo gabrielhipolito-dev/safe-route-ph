@@ -186,8 +186,6 @@ export const getRouteSearchResult = async (from, to) => {
     }
   }
 
-  const apiKey = process.env.GOOGLE_MAPS_API_KEY
-
   const [navigation, nearestStations] = await Promise.all([
     getGoogleNavigation(from, to),
     getNearestStationsForQuery(from, to),
