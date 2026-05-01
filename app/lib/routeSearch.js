@@ -95,9 +95,20 @@ const mapGoogleNavigation = (payload) => {
 
   if (!allRoutes.length) return null
 
+  const seenSignatures = new Set()
+  const deduplicatedRoutes = []
+
+  for (const route of allRoutes) {
+    const signature = `${route.summary}_${route.distance}_${route.duration}_${route.calculatedRegularFare}`
+    if (!seenSignatures.has(signature)) {
+      seenSignatures.add(signature)
+      deduplicatedRoutes.push(route)
+    }
+  }
+
   return {
-    ...allRoutes[0],
-    allRoutes,
+    ...deduplicatedRoutes[0],
+    allRoutes: deduplicatedRoutes,
   }
 }
 

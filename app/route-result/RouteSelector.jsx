@@ -123,14 +123,6 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey }
                 src={`https://www.google.com/maps/embed/v1/directions?key=${apiKey}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=transit`}
               />
             </div>
-
-            {/* In-app helpful troubleshooting instructions alert/tip */}
-            <div className="rounded-xl border border-amber-200/80 bg-amber-50/40 p-3 shadow-sm backdrop-blur">
-              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-amber-800 mb-1">Google Maps API Troubleshooting Tip</p>
-              <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                Excellent! If you've just enabled the <strong>Maps JavaScript API</strong> or <strong>Maps Embed API</strong> in your Google Cloud Console, make sure that both APIs are fully activated and added to the API Key restrictions.
-              </p>
-            </div>
           </div>
         )}
 
