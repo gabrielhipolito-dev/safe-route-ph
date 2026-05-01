@@ -2,6 +2,75 @@
 
 import { useState } from 'react'
 
+const formatArrivalTime = (durationText = '') => {
+  if (!durationText) return 'N/A'
+  
+  const hoursMatch = durationText.match(/(\d+)\s*hr/i) || durationText.match(/(\d+)\s*hour/i)
+  const minsMatch = durationText.match(/(\d+)\s*min/i)
+  
+  let totalMins = 0
+  if (hoursMatch) totalMins += parseInt(hoursMatch[1]) * 60
+  if (minsMatch) totalMins += parseInt(minsMatch[1])
+  
+  if (totalMins === 0) return 'N/A'
+  
+  const now = new Date()
+  now.setMinutes(now.getMinutes() + totalMins)
+  
+  return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+}
+
+const getTrainIntermediateStations = (departure, arrival) => {
+  if (!departure || !arrival) return null
+
+  const lrt1 = [
+    "Roosevelt", "Balintawak", "Monumento", "5th Avenue", "R. Papa",
+    "Abad Santos", "Blumentritt", "Tayuman", "Bambang", "D. Jose",
+    "Carriedo", "Central Terminal", "United Nations", "Pedro Gil",
+    "Quirino", "Vito Cruz", "Gil Puyat", "Libertad", "EDSA", "Baclaran"
+  ];
+  const mrt3 = [
+    "North Avenue", "Quezon Avenue", "GMA-Kamuning", "Araneta Center-Cubao",
+    "Santolan-Annas", "Ortigas", "Shaw Boulevard", "Boni", "Guadalupe",
+    "Buendia", "Ayala", "Magallanes", "Taft Avenue"
+  ];
+
+  const matchStop = (stops, term) => {
+    const clean = term.toLowerCase().replace(/station/g, '').trim()
+    return stops.findIndex(s => s.toLowerCase().includes(clean) || clean.includes(s.toLowerCase()))
+  }
+
+  let stopsList = null
+  let fromIdx = matchStop(lrt1, departure)
+  let toIdx = matchStop(lrt1, arrival)
+
+  if (fromIdx !== -1 && toIdx !== -1) {
+    stopsList = lrt1
+  } else {
+    fromIdx = matchStop(mrt3, departure)
+    toIdx = matchStop(mrt3, arrival)
+    if (fromIdx !== -1 && toIdx !== -1) {
+      stopsList = mrt3
+    }
+  }
+
+  if (stopsList && fromIdx !== -1 && toIdx !== -1) {
+    let sliced = []
+    if (fromIdx <= toIdx) {
+      sliced = stopsList.slice(fromIdx, toIdx + 1)
+    } else {
+      sliced = stopsList.slice(toIdx, fromIdx + 1).reverse()
+    }
+    
+    return sliced.map((stop, i) => ({
+      name: stop,
+      estMinutes: i * 2
+    }))
+  }
+
+  return null
+}
+
 export default function RouteSelector({ allRoutes, origin, destination, apiKey }) {
   const [activeIdx, setActiveIdx] = useState(0)
   const [isEnlarged, setIsEnlarged] = useState(false)
@@ -66,7 +135,10 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey }
           <div className="rounded-2xl bg-slate-50 border border-slate-100/80 px-4 py-2.5 text-right font-bold text-slate-900 shadow-sm backdrop-blur">
             <p className="text-xs uppercase tracking-[0.16em] text-slate-400 font-bold mb-0.5">Estimated Time</p>
             <p className="text-lg font-black text-slate-950">{activeRoute.duration || 'N/A'}</p>
-            <p className="text-xs font-medium text-slate-500 tracking-wide">{activeRoute.distance || 'N/A'}</p>
+            <p className="text-xs font-medium text-slate-500 tracking-wide mb-1">{activeRoute.distance || 'N/A'}</p>
+            <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-cyan-600 bg-cyan-50/60 border border-cyan-100/50 rounded-lg px-2 py-1 text-center">
+              Arrival: {formatArrivalTime(activeRoute.duration)}
+            </p>
           </div>
         </div>
 
@@ -129,44 +201,68 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey }
         {/* Turn-by-turn steps */}
         <div className="grid gap-2.5">
           <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-slate-400 mb-1 pl-1">Step-by-Step Commute Guide</p>
-          {activeRoute.steps.map((step, index) => (
-            <div
-              key={`${step.instruction}-${index}`}
-              className="rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 px-4 py-3.5 transition-all duration-200 hover:shadow-sm"
-            >
-              <div className="flex flex-col gap-2">
-                <p className="text-sm font-bold text-slate-950 leading-relaxed">
-                  {index + 1}. {step.instruction}
-                </p>
-                <div className="flex flex-wrap items-center gap-2 mt-1">
-                  <span className="rounded-full bg-white border border-slate-200 px-2.5 py-1 text-[11px] font-bold tracking-wider uppercase text-slate-600 shadow-sm">
-                    {step.mode}
-                  </span>
-                  {step.line && (
-                    <span className="rounded-full bg-cyan-100/60 border border-cyan-100 px-2.5 py-1 text-[11px] font-bold tracking-wider uppercase text-cyan-700">
-                      {step.line}
+          {activeRoute.steps.map((step, index) => {
+            const trainGuide = getTrainIntermediateStations(step.departureStop, step.arrivalStop)
+
+            return (
+              <div
+                key={`${step.instruction}-${index}`}
+                className="rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 px-4 py-3.5 transition-all duration-200 hover:shadow-sm"
+              >
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm font-bold text-slate-950 leading-relaxed">
+                    {index + 1}. {step.instruction}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2 mt-1">
+                    <span className="rounded-full bg-white border border-slate-200 px-2.5 py-1 text-[11px] font-bold tracking-wider uppercase text-slate-600 shadow-sm">
+                      {step.mode}
                     </span>
+                    {step.line && (
+                      <span className="rounded-full bg-cyan-100/60 border border-cyan-100 px-2.5 py-1 text-[11px] font-bold tracking-wider uppercase text-cyan-700">
+                        {step.line}
+                      </span>
+                    )}
+                    {step.duration && (
+                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-500">
+                        {step.duration}
+                      </span>
+                    )}
+                    {step.distance && (
+                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-500">
+                        {step.distance}
+                      </span>
+                    )}
+                  </div>
+                  {(step.departureStop || step.arrivalStop) && (
+                    <p className="mt-1.5 text-xs font-semibold text-slate-400 flex items-center gap-1.5 pl-0.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                      {step.departureStop || 'Departure'}{' → '}{step.arrivalStop || 'Destination'}
+                    </p>
                   )}
-                  {step.duration && (
-                    <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-500">
-                      {step.duration}
-                    </span>
-                  )}
-                  {step.distance && (
-                    <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-500">
-                      {step.distance}
-                    </span>
+
+                  {/* Detailed Train Station Guided List */}
+                  {trainGuide && (
+                    <div className="mt-3.5 border-t border-slate-100 pt-3 flex flex-col gap-2">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-cyan-700">
+                        🚞 Intermediate Stations Breakdown
+                      </p>
+                      <div className="flex flex-col gap-2.5 border-l-2 border-cyan-300/40 ml-2.5 pl-3 pt-1">
+                        {trainGuide.map((station, sIdx) => (
+                          <div key={sIdx} className="relative flex items-center gap-2 text-xs font-medium text-slate-700">
+                            <span className="h-2.5 w-2.5 rounded-full bg-cyan-500 border-2 border-white shadow-sm absolute -left-[18px]" />
+                            <span className="font-bold text-slate-900">{station.name}</span>
+                            <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-bold uppercase">
+                              +{station.estMinutes}m
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
-                {(step.departureStop || step.arrivalStop) && (
-                  <p className="mt-1.5 text-xs font-semibold text-slate-400 flex items-center gap-1.5 pl-0.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                    {step.departureStop || 'Departure'}{' → '}{step.arrivalStop || 'Destination'}
-                  </p>
-                )}
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </article>
     </div>
