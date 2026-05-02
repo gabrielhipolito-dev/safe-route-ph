@@ -25,11 +25,33 @@ const getStepFare = (step) => {
 
   const mode = step.mode.toLowerCase()
   const instruction = (step.instruction || '').toLowerCase()
+  const durationText = (step.duration || '').toLowerCase()
 
   if (mode.includes('walk')) {
     return '₱0 (Free)'
   }
 
+  // Check for hours or days in the duration text
+  const daysMatch = durationText.match(/(\d+)\s*day/i)
+  const hoursMatch = durationText.match(/(\d+)\s*hr/i) || durationText.match(/(\d+)\s*hour/i)
+
+  if (daysMatch || hoursMatch) {
+    const days = daysMatch ? parseInt(daysMatch[1], 10) : 0
+    const hours = hoursMatch ? parseInt(hoursMatch[1], 10) : 0
+    const totalHours = (days * 24) + hours
+
+    if (mode.includes('bus') || instruction.includes('bus')) {
+      // Long haul provincial bus trip (e.g., ~₱180 per hour of travel)
+      return `₱${totalHours * 180 + 150}`
+    }
+    if (mode.includes('train') || instruction.includes('lrt') || instruction.includes('mrt')) {
+      // Long distance train or express
+      return `₱${totalHours * 120 + 80}`
+    }
+    return `₱${totalHours * 150}`
+  }
+
+  // Short distance / local commute
   if (mode.includes('train') || mode.includes('tram') || mode.includes('subway') || instruction.includes('lrt') || instruction.includes('mrt')) {
     return '₱15 - ₱35'
   }
@@ -44,6 +66,7 @@ const getStepFare = (step) => {
 
   return '₱15'
 }
+
 
 const getTrainIntermediateStations = (departure, arrival) => {
   if (!departure || !arrival) return null
@@ -119,8 +142,17 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
 
   const iframeSrc = useMemo(() => {
     if (!apiKey || !origin || !destination) return ''
-    return `https://www.google.com/maps/embed/v1/directions?key=${apiKey}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=transit`
-  }, [apiKey, origin, destination])
+    let mode = 'transit'
+    if (activeRoute && activeRoute.steps && activeRoute.steps.length > 0) {
+      const activeMode = (activeRoute.steps[0].mode || '').toLowerCase()
+      if (activeMode.includes('walk')) {
+        mode = 'walking'
+      } else if (activeMode.includes('drive') || activeMode.includes('car')) {
+        mode = 'driving'
+      }
+    }
+    return `https://www.google.com/maps/embed/v1/directions?key=${apiKey}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=${mode}`
+  }, [apiKey, origin, destination, activeRoute])
 
   return (
     <div className="flex flex-col gap-6">
@@ -197,7 +229,7 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                 </span>
               </div>
               <span className="text-base font-black tracking-tight leading-snug line-clamp-1 uppercase">
-                {routeOpt.summary || `Route ${rIndex + 1}`}
+                Alternative Option {rIndex + 1}
               </span>
               <div className="flex flex-wrap justify-between items-center gap-1.5 w-full mt-1 border-t border-white/10 pt-2">
                 <span className={`text-xs font-bold uppercase tracking-wide ${activeIdx === rIndex ? 'text-emerald-300' : 'text-slate-500'}`}>
@@ -219,7 +251,7 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                 Selected Route Option {activeIdx + 1}
               </span>
               <h2 className="text-xl font-black text-white tracking-tight uppercase mt-1">
-                {activeRoute.summary || `Alternative Option ${activeIdx + 1}`}
+                Alternative Option {activeIdx + 1}
               </h2>
             </div>
             <div className="rounded-xl bg-slate-900/40 border border-white/10 px-3.5 py-2 text-right font-black text-white shadow-2xl backdrop-blur-md">
