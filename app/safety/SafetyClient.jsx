@@ -1,21 +1,92 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { safetyReports } from '../data/reports'
 
 const safetyPins = [
-  { id: 1, name: 'University of the Philippines Diliman', lat: 14.6538, lng: 121.0685, type: 'green', status: 'Safe Zone', top: '15%', left: '75%' },
-  { id: 2, name: 'Adamson University (Ermita)', lat: 14.5872, lng: 120.9856, type: 'green', status: 'Safe Zone', top: '56%', left: '46%' },
-  { id: 3, name: 'Recto Avenue', lat: 14.6031, lng: 120.9852, type: 'red', status: 'Danger Zone', top: '35%', left: '55%' },
-  { id: 4, name: 'Espana Boulevard', lat: 14.6111, lng: 120.9892, type: 'orange', status: 'Caution Zone', top: '30%', left: '68%' },
-  { id: 5, name: 'Gil Puyat Station', lat: 14.5539, lng: 120.9967, type: 'orange', status: 'Caution Zone', top: '72%', left: '42%' },
+  { id: 1, name: 'University of the Philippines Diliman', lat: 14.6538, lng: 121.0685, type: 'green', status: 'Safe Zone' },
+  { id: 2, name: 'Adamson University (Ermita)', lat: 14.5872, lng: 120.9856, type: 'green', status: 'Safe Zone' },
+  { id: 3, name: 'Recto Avenue', lat: 14.6031, lng: 120.9852, type: 'red', status: 'Danger Zone' },
+  { id: 4, name: 'Espana Boulevard', lat: 14.6111, lng: 120.9892, type: 'orange', status: 'Caution Zone' },
+  { id: 5, name: 'Gil Puyat Station', lat: 14.5539, lng: 120.9967, type: 'orange', status: 'Caution Zone' },
 ]
-
 
 export default function SafetyClient({ apiKey }) {
   const [showForm, setShowForm] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('')
   const [activePin, setActivePin] = useState(safetyPins[2]) // Recto Avenue as initial pin
+
+  const mapRef = useRef(null)
+
+  useEffect(() => {
+    if (!apiKey) return
+
+    let isMounted = true
+
+    const loadAndInit = () => {
+      if (!isMounted) return
+      if (!window.google || !window.google.maps) {
+        // Create only if doesn't exist yet
+        const existingScript = document.getElementById('google-maps-js-api')
+        if (!existingScript) {
+          const script = document.createElement('script')
+          script.id = 'google-maps-js-api'
+          script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`
+          script.async = true
+          script.defer = true
+          script.onload = () => {
+            if (isMounted) initGoogleMap()
+          }
+          document.head.appendChild(script)
+        } else {
+          existingScript.addEventListener('load', () => {
+            if (isMounted) initGoogleMap()
+          })
+        }
+      } else {
+        initGoogleMap()
+      }
+    }
+
+    const initGoogleMap = () => {
+      if (!mapRef.current || !window.google || !window.google.maps) return
+
+      const map = new window.google.maps.Map(mapRef.current, {
+        center: { lat: activePin.lat, lng: activePin.lng },
+        zoom: 13,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+      })
+
+      // Add clean markers and native direct circles for ALL pins on the Google map!
+      safetyPins.forEach((pin) => {
+        new window.google.maps.Marker({
+          position: { lat: pin.lat, lng: pin.lng },
+          map: map,
+          title: pin.name,
+        })
+
+        new window.google.maps.Circle({
+          strokeColor: pin.type === 'red' ? '#EF4444' : pin.type === 'orange' ? '#F59E0B' : '#10B981',
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: pin.type === 'red' ? '#EF4444' : pin.type === 'orange' ? '#F59E0B' : '#10B981',
+          fillOpacity: 0.3,
+          map: map,
+          center: { lat: pin.lat, lng: pin.lng },
+          radius: 350, // 350 meters circle
+        })
+      })
+    }
+
+
+    loadAndInit()
+
+    return () => {
+      isMounted = false
+    }
+  }, [apiKey, activePin])
 
   const categories = [
     { id: 'night', label: '🌙 Unsafe at Night' },
@@ -97,74 +168,14 @@ export default function SafetyClient({ apiKey }) {
           <div className="flex justify-between items-center bg-slate-50 border border-slate-200/60 p-3 rounded-2xl">
             <div className="flex flex-col">
               <span className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-700">Live Safety Map View</span>
-              <span className="text-[11px] text-slate-500 font-medium">Interactive pin-point for zones</span>
+              <span className="text-[11px] text-slate-500 font-medium">Native Google Maps with live circles</span>
             </div>
           </div>
 
-          <div className={`relative rounded-[24px] border-4 bg-slate-50 overflow-hidden transition-all duration-500 w-full h-[380px] ${
-            activePin.type === 'red'
-              ? 'border-red-500 shadow-[0_0_35px_rgba(239,68,68,0.4)]'
-              : activePin.type === 'orange'
-              ? 'border-orange-400 shadow-[0_0_35px_rgba(251,146,60,0.4)]'
-              : 'border-green-400 shadow-[0_0_35px_rgba(74,222,128,0.4)]'
-          }`}>
-            {/* 5 Distinct Visual Colored Safety Hotspot Circles displayed simultaneously on the map */}
-            <div className="absolute inset-0 z-20 pointer-events-auto select-none overflow-hidden">
-              {safetyPins.map((pin) => (
-                <button
-                  key={pin.id}
-                  onClick={() => setActivePin(pin)}
-                  style={{ top: pin.top, left: pin.left }}
-                  className={`absolute flex items-center justify-center -translate-x-1/2 -translate-y-1/2 p-1.5 rounded-full border-2 transition-all duration-300 hover:scale-125 shadow-md backdrop-blur-[1.5px] cursor-pointer group ${
-                    activePin.id === pin.id ? 'scale-110 z-30' : 'z-20'
-                  } ${
-                    pin.type === 'red'
-                      ? 'bg-red-500/30 border-red-500 hover:bg-red-500/50'
-                      : pin.type === 'orange'
-                      ? 'bg-orange-400/30 border-orange-400 hover:bg-orange-400/50'
-                      : 'bg-green-500/30 border-green-500 hover:bg-green-500/50'
-                  }`}
-                >
-                  <span className={`w-3.5 h-3.5 rounded-full ${
-                    pin.type === 'red' ? 'bg-red-600 animate-pulse' : pin.type === 'orange' ? 'bg-orange-500' : 'bg-green-500 animate-pulse'
-                  }`} />
-                  
-                  {/* Floating Label / Tooltip */}
-                  <span className={`absolute bottom-full mb-1 bg-slate-900 text-white text-[10px] font-extrabold uppercase tracking-wider px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg border border-slate-700/80 pointer-events-none ${
-                    activePin.id === pin.id ? 'opacity-100 scale-100' : ''
-                  }`}>
-                    {pin.name} ({pin.status})
-                  </span>
-                </button>
-              ))}
-            </div>
-
-
-            {apiKey ? (
-              <iframe
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                loading="lazy"
-                allowFullScreen
-                referrerPolicy="no-referrer-when-downgrade"
-                src={`https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodeURIComponent(activePin.name)}`}
-              />
-            ) : (
-              <div className="flex flex-col items-center justify-center text-center p-6 h-full bg-slate-900 text-white">
-                <span className="text-4xl mb-3">📍</span>
-                <h3 className="font-bold text-lg">{activePin.name}</h3>
-                <span className={`mt-1 text-xs px-3 py-1 rounded-full font-bold uppercase tracking-[0.16em] ${
-                  activePin.type === 'red' ? 'bg-red-500/20 text-red-400' : activePin.type === 'orange' ? 'bg-orange-500/20 text-orange-400' : 'bg-green-500/20 text-green-400'
-                }`}>
-                  {activePin.status}
-                </span>
-                <p className="mt-3 text-xs text-slate-400 max-w-md mx-auto">
-                  Interactive zone viewing is fully supported. To view Google Maps natively, please supply process.env.GOOGLE_MAPS_API_KEY.
-                </p>
-              </div>
-            )}
-          </div>
+          <div 
+            ref={mapRef} 
+            className="rounded-[24px] border border-slate-200 bg-slate-50 overflow-hidden shadow-sm transition-all duration-300 w-full h-[380px]"
+          />
         </div>
       </div>
 

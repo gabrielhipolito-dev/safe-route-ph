@@ -5,8 +5,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const navItems = [
-  { href: '/safety', label: 'Safety' },
-  { href: '/fares', label: 'Fares' },
+  { href: '/', label: 'Home' },
+  { href: '/safety', label: 'Safety Reports' },
+  { href: '/fares', label: 'Fare Calculator' },
   { href: '/last-trip', label: 'Last Trip' },
   { href: '/first-timer', label: 'First Timer' },
 ]
@@ -30,8 +31,8 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-950/85 backdrop-blur-md">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        <Link href="/" onClick={() => setMenuOpen(false)} className="group flex items-center gap-3">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+        <Link href="/" onClick={() => setMenuOpen(false)} className="group flex items-center gap-3 shrink-0">
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#22D3EE,#0EA5E9)] text-sm font-black tracking-tight text-slate-950 shadow-[0_12px_28px_rgba(34,211,238,0.22)] transition-transform duration-300 group-hover:scale-105">
             SR
           </span>
@@ -45,16 +46,17 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <div className="hidden items-center gap-2 md:flex">
+        {/* Dynamic AI-Dashboard Navigation alignment */}
+        <div className="hidden items-center gap-1.5 md:flex">
           {navItems.map((item) => {
-            const isActive = pathname?.startsWith(item.href)
+            const isActive = item.href === '/' ? pathname === '/' : pathname?.startsWith(item.href)
 
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setMenuOpen(false)}
-                className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 ${
+                className={`rounded-xl px-3.5 py-2 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 ${
                   isActive
                     ? 'bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 shadow-[0_8px_24px_rgba(34,211,238,0.14)]'
                     : 'text-slate-300 hover:bg-white/5 hover:text-white border border-transparent'
@@ -66,11 +68,11 @@ export default function Navbar() {
           })}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center md:hidden">
           <button
             type="button"
             onClick={() => setMenuOpen((value) => !value)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-100 transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white md:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-100 transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
             aria-expanded={menuOpen}
             aria-controls="mobile-navigation"
             aria-label="Toggle navigation menu"
@@ -106,7 +108,7 @@ export default function Navbar() {
 
           <div className="grid gap-2">
             {navItems.map((item) => {
-              const isActive = pathname?.startsWith(item.href)
+              const isActive = item.href === '/' ? pathname === '/' : pathname?.startsWith(item.href)
 
               return (
                 <Link

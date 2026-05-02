@@ -140,30 +140,57 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey }
           </div>
         </div>
 
-        {/* Estimated Fare Breakdown Details */}
-        <div className="rounded-2xl border border-cyan-100/80 bg-cyan-50/40 p-4 sm:p-5 shadow-sm backdrop-blur">
-          <p className="text-xs font-bold uppercase tracking-[0.24em] text-cyan-800 mb-3">
-            Estimated Trip Fare
-          </p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-xl bg-white p-3.5 border border-slate-100 hover:shadow-sm transition-all duration-200">
-              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Regular commuter fare</p>
-              <p className="text-2xl font-extrabold text-slate-950 mt-1 tracking-tight">
-                {activeRoute.totalFareText || `₱${activeRoute.calculatedRegularFare || 0}`}
-              </p>
-              <p className="mt-1 text-xs text-slate-500 font-medium">Standard LTFRB pricing</p>
+        {/* Estimated Fare Breakdown Details — Premium Digital Fare Board Display */}
+        <div className="rounded-[32px] border border-cyan-200 bg-gradient-to-br from-white via-cyan-50/10 to-slate-50/20 p-5 sm:p-6 shadow-sm flex flex-col gap-5">
+          <div className="flex flex-wrap justify-between items-center gap-3">
+            <div>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-100 text-cyan-800 px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-wider">
+                🎫 Commuter Fare Board
+              </span>
+              <h3 className="text-sm font-semibold text-slate-500 mt-1 uppercase tracking-wide">
+                Live computation for Option {activeIdx + 1}
+              </h3>
             </div>
-            <div className="rounded-xl bg-white p-3.5 border border-slate-100 hover:shadow-sm transition-all duration-200">
-              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-cyan-600">Student fare (20% discount)</p>
-              <p className="text-2xl font-extrabold text-cyan-700 mt-1 tracking-tight">
-                {activeRoute.totalFareText
-                  ? `₱${Math.round(parseFloat(activeRoute.totalFareText.replace(/[^\d.]/g, '')) * 0.8 || 0)}`
-                  : `₱${activeRoute.calculatedStudentFare || 0}`}
-              </p>
-              <p className="mt-1 text-xs text-slate-500 font-medium">Verified student rate</p>
+            <span className="bg-emerald-500/10 border border-emerald-300 text-emerald-800 text-xs font-black uppercase tracking-wider px-3.5 py-1.5 rounded-full">
+              Student-Verified 2026
+            </span>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {/* Regular Fare Card */}
+            <div className="relative rounded-2xl bg-white p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+                Regular Commuter Fare
+              </span>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className="text-4xl font-black tracking-tight text-slate-900">
+                  {activeRoute.totalFareText || `₱${activeRoute.calculatedRegularFare || 0}`}
+                </span>
+                <span className="text-xs font-semibold text-slate-400">One-way</span>
+              </div>
+              <p className="mt-2 text-xs text-slate-500 font-medium">Standard LTFRB fare matrix applied.</p>
+            </div>
+
+            {/* Student Discount Card */}
+            <div className="relative rounded-2xl bg-gradient-to-br from-cyan-50 via-white to-cyan-50/40 p-5 border border-cyan-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+              <div className="absolute top-0 right-0 h-16 w-16 bg-[radial-gradient(circle_at_top_right,_rgba(6,182,212,0.15),_transparent_70%)] pointer-events-none" />
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-cyan-700 flex justify-between">
+                <span>Student Discount Rate</span>
+                <span className="text-[10px] bg-cyan-100 text-cyan-800 font-black px-2 py-0.5 rounded-full uppercase">20% Off</span>
+              </span>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className="text-4xl font-black tracking-tight text-cyan-700">
+                  {activeRoute.totalFareText
+                    ? `₱${Math.round(parseFloat(activeRoute.totalFareText.replace(/[^\d.]/g, '')) * 0.8 || 0)}`
+                    : `₱${activeRoute.calculatedStudentFare || 0}`}
+                </span>
+                <span className="text-xs font-semibold text-cyan-600/60">With Valid ID</span>
+              </div>
+              <p className="mt-2 text-xs text-cyan-600/70 font-medium">Valid for active Filipino students only.</p>
             </div>
           </div>
         </div>
+
 
         {/* Directly Integrated Live Google Map with Enlarge Option */}
         {apiKey && origin && destination && (
