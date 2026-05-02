@@ -1,7 +1,7 @@
 export const safetyReports = [
   {
     id: 1,
-    route: "Adamson University to Quiapo",
+    route: "Adamson University",
     date: "March 6, 2026",
     badgeLabel: "🌙 Unsafe at Night",
     badgeStyles: "bg-red-100 text-red-700",
@@ -10,7 +10,7 @@ export const safetyReports = [
   },
   {
     id: 2,
-    route: "UST to SM Manila",
+    route: "UST",
     date: "March 5, 2026",
     badgeLabel: "💰 Overcharging",
     badgeStyles: "bg-orange-100 text-orange-700",
@@ -19,7 +19,7 @@ export const safetyReports = [
   },
   {
     id: 3,
-    route: "DLSU to Lawton Terminal",
+    route: "DLSU",
     date: "March 4, 2026",
     badgeLabel: "⚠️ Harassment",
     badgeStyles: "bg-purple-100 text-purple-700",
@@ -28,7 +28,7 @@ export const safetyReports = [
   },
   {
     id: 4,
-    route: "FEU to Divisoria",
+    route: "FEU",
     date: "March 3, 2026",
     badgeLabel: "📢 General Warning",
     badgeStyles: "bg-blue-100 text-blue-700",
