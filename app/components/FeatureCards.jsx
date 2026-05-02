@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { features } from '../data/features';
 
-const featureLinks = ['/route-result', '/safety', '/last-trip'];
+const featureLinks = ['/first-timer', '/safety', '/last-trip'];
 
 export default function FeatureCards() {
   return (
