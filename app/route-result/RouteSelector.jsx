@@ -20,6 +20,31 @@ const formatArrivalTime = (durationText = '') => {
   return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
 }
 
+const getStepFare = (step) => {
+  if (!step || !step.mode) return '₱0'
+
+  const mode = step.mode.toLowerCase()
+  const instruction = (step.instruction || '').toLowerCase()
+
+  if (mode.includes('walk')) {
+    return '₱0 (Free)'
+  }
+
+  if (mode.includes('train') || mode.includes('tram') || mode.includes('subway') || instruction.includes('lrt') || instruction.includes('mrt')) {
+    return '₱15 - ₱35'
+  }
+
+  if (mode.includes('bus') || instruction.includes('bus')) {
+    return '₱15 - ₱45'
+  }
+
+  if (mode.includes('jeep') || instruction.includes('jeepney') || instruction.includes('tricycle')) {
+    return '₱13'
+  }
+
+  return '₱15'
+}
+
 const getTrainIntermediateStations = (departure, arrival) => {
   if (!departure || !arrival) return null
 
@@ -91,6 +116,11 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
   if (!uniqueRoutes || uniqueRoutes.length === 0) return null
 
   const activeRoute = uniqueRoutes[activeIdx] || uniqueRoutes[0]
+
+  const iframeSrc = useMemo(() => {
+    if (!apiKey || !origin || !destination) return ''
+    return `https://www.google.com/maps/embed/v1/directions?key=${apiKey}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=transit`
+  }, [apiKey, origin, destination])
 
   return (
     <div className="flex flex-col gap-6">
@@ -207,13 +237,23 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                   <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-400">Live Navigation Map</span>
                   <span className="text-[10px] text-slate-400 font-medium leading-tight">Interactive Google transit route map</span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsEnlarged(!isEnlarged)}
-                  className="inline-flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1.5 text-xs font-black text-slate-300 transition-colors shadow-sm cursor-pointer active:scale-95 uppercase tracking-wider"
-                >
-                  {isEnlarged ? 'Shrink Map ⤬' : 'Enlarge Map ⤢'}
-                </button>
+                <div className="flex gap-2">
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=transit`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 px-3 py-1.5 text-xs font-black text-emerald-400 transition-colors shadow-sm cursor-pointer active:scale-95 uppercase tracking-wider"
+                  >
+                    Open in Maps ↗
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => setIsEnlarged(!isEnlarged)}
+                    className="inline-flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1.5 text-xs font-black text-slate-300 transition-colors shadow-sm cursor-pointer active:scale-95 uppercase tracking-wider"
+                  >
+                    {isEnlarged ? 'Shrink Map ⤬' : 'Enlarge Map ⤢'}
+                  </button>
+                </div>
               </div>
 
               <div className={`rounded-[24px] border border-white/10 bg-slate-950 overflow-hidden shadow-2xl transition-all duration-300 w-full ${isEnlarged ? 'h-[500px] scale-[1.01]' : 'aspect-video min-h-[220px]'}`}>
@@ -224,7 +264,7 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                   loading="lazy"
                   allowFullScreen
                   referrerPolicy="no-referrer-when-downgrade"
-                  src={`https://www.google.com/maps/embed/v1/directions?key=${apiKey}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=transit`}
+                  src={iframeSrc}
                 />
               </div>
             </div>
@@ -235,6 +275,7 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
             <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400 mb-0.5 pl-1">Step-by-Step Commute Guide</p>
             {activeRoute.steps.map((step, index) => {
               const trainGuide = getTrainIntermediateStations(step.departureStop, step.arrivalStop)
+              const estimatedFare = getStepFare(step)
 
               return (
                 <div
@@ -242,9 +283,14 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                   className="rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-3.5 py-3 transition-all duration-200 hover:shadow-xl"
                 >
                   <div className="flex flex-col gap-2">
-                    <p className="text-xs font-black text-slate-100 leading-relaxed">
-                      {index + 1}. {step.instruction}
-                    </p>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-xs font-black text-slate-100 leading-relaxed">
+                        {index + 1}. {step.instruction}
+                      </p>
+                      <span className="rounded-full bg-emerald-500/15 border border-emerald-500/25 px-2.5 py-0.5 text-[10px] font-black tracking-wider uppercase text-emerald-400 shrink-0">
+                        💵 Payment: {estimatedFare}
+                      </span>
+                    </div>
                     <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                       <span className="rounded-full bg-white/5 border border-white/10 px-2.5 py-0.5 text-[10px] font-black tracking-wider uppercase text-slate-300 shadow-sm">
                         {step.mode}
