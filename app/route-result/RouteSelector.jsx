@@ -80,38 +80,38 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey }
   const activeRoute = allRoutes[activeIdx] || allRoutes[0]
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3 items-start">
-      {/* Route List Pane (Google Maps & Moovit style) */}
+    <div className="grid gap-6 lg:grid-cols-3 items-start text-slate-100">
+      {/* Route List Pane */}
       <div className="lg:col-span-1 flex flex-col gap-3 max-h-[700px] overflow-y-auto pr-1">
-        <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-slate-400 pl-1">
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 pl-1">
           Transit Route Options
         </p>
         {allRoutes.map((routeOpt, rIndex) => (
           <button
             key={rIndex}
             onClick={() => setActiveIdx(rIndex)}
-            className={`flex flex-col gap-2 p-4 rounded-[24px] transition-all duration-300 text-left border ${activeIdx === rIndex
-                ? 'bg-slate-900 border-slate-800 text-white shadow-[0_16px_36px_rgba(15,23,42,0.14)] font-bold scale-[1.01]'
-                : 'bg-white border-slate-200/60 hover:border-slate-300 hover:bg-slate-50/50 text-slate-800 font-medium'
+            className={`flex flex-col gap-2 p-4 rounded-[24px] transition-all duration-300 text-left border hover:-translate-y-1 ${activeIdx === rIndex
+                ? 'bg-emerald-500/10 border-emerald-400 text-white shadow-[0_0_25px_rgba(52,211,153,0.25)] font-black'
+                : 'bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10 text-slate-300 font-medium'
               }`}
           >
             <div className="flex items-center justify-between gap-2 w-full">
-              <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.16em] ${activeIdx === rIndex ? 'bg-cyan-400 text-slate-950' : 'bg-slate-100 text-slate-600'
+              <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] border ${activeIdx === rIndex ? 'bg-emerald-500 border-emerald-500 text-slate-950 shadow-[0_0_12px_rgba(52,211,153,0.3)]' : 'bg-white/5 border-white/10 text-slate-400'
                 }`}>
                 Option {rIndex + 1} {rIndex === 0 && '• Best'}
               </span>
-              <span className={`text-sm font-black tracking-tight ${activeIdx === rIndex ? 'text-white' : 'text-slate-950'}`}>
+              <span className={`text-sm font-black tracking-tight uppercase ${activeIdx === rIndex ? 'text-white' : 'text-slate-300'}`}>
                 {routeOpt.duration || 'N/A'}
               </span>
             </div>
-            <span className="text-base font-black tracking-tight leading-snug line-clamp-1">
+            <span className="text-base font-black tracking-tight leading-snug line-clamp-1 uppercase">
               {routeOpt.summary || `Route ${rIndex + 1}`}
             </span>
-            <div className="flex flex-wrap justify-between items-center gap-1.5 w-full mt-1 border-t border-slate-100/10 pt-2">
-              <span className={`text-xs font-medium ${activeIdx === rIndex ? 'text-cyan-200' : 'text-slate-500'}`}>
+            <div className="flex flex-wrap justify-between items-center gap-1.5 w-full mt-1 border-t border-white/10 pt-2">
+              <span className={`text-xs font-bold uppercase tracking-wide ${activeIdx === rIndex ? 'text-emerald-300' : 'text-slate-500'}`}>
                 {routeOpt.distance || 'N/A'}
               </span>
-              <span className={`text-xs font-bold ${activeIdx === rIndex ? 'text-cyan-300' : 'text-cyan-700'}`}>
+              <span className={`text-xs font-black uppercase tracking-wide ${activeIdx === rIndex ? 'text-emerald-400' : 'text-emerald-500'}`}>
                 {routeOpt.totalFareText || `₱${routeOpt.calculatedRegularFare || 0} reg`}
               </span>
             </div>
@@ -119,97 +119,95 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey }
         ))}
       </div>
 
-      {/* Selected Route Detail View (Google Maps & Moovit style steps) */}
-      <article className="lg:col-span-2 rounded-[32px] border border-cyan-200/80 bg-white p-5 sm:p-7 shadow-[0_24px_50px_rgba(15,23,42,0.08)] transition-all duration-300 max-h-[700px] overflow-y-auto flex flex-col gap-5">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-5">
+      {/* Selected Route Detail View */}
+      <article className="lg:col-span-2 rounded-[32px] border border-white/10 bg-white/5 p-5 sm:p-7 shadow-2xl backdrop-blur-md transition-all duration-300 max-h-[700px] overflow-y-auto flex flex-col gap-5">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
           <div className="space-y-1.5">
-            <span className="rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] bg-cyan-100 text-cyan-800">
+            <span className="rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.15)]">
               Selected Route Option {activeIdx + 1}
             </span>
-            <h2 className="text-2xl font-black text-slate-950 tracking-tight">
+            <h2 className="text-2xl font-black text-white tracking-tight uppercase">
               {activeRoute.summary || `Alternative Option ${activeIdx + 1}`}
             </h2>
           </div>
-          <div className="rounded-2xl bg-slate-50 border border-slate-100/80 px-4 py-2.5 text-right font-bold text-slate-900 shadow-sm backdrop-blur">
-            <p className="text-xs uppercase tracking-[0.16em] text-slate-400 font-bold mb-0.5">Estimated Time</p>
-            <p className="text-lg font-black text-slate-950">{activeRoute.duration || 'N/A'}</p>
-            <p className="text-xs font-medium text-slate-500 tracking-wide mb-1">{activeRoute.distance || 'N/A'}</p>
-            <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-cyan-600 bg-cyan-50/60 border border-cyan-100/50 rounded-lg px-2 py-1 text-center">
+          <div className="rounded-2xl bg-slate-900/40 border border-white/10 px-4 py-2.5 text-right font-black text-white shadow-2xl backdrop-blur-md">
+            <p className="text-xs uppercase tracking-[0.16em] text-slate-400 font-black mb-0.5">Estimated Time</p>
+            <p className="text-xl font-black text-white">{activeRoute.duration || 'N/A'}</p>
+            <p className="text-xs font-bold text-slate-400 tracking-wide mb-1 uppercase tracking-wider">{activeRoute.distance || 'N/A'}</p>
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-2 py-1 text-center">
               Arrival: {formatArrivalTime(activeRoute.duration)}
             </p>
           </div>
         </div>
 
-        {/* Estimated Fare Breakdown Details — Premium Digital Fare Board Display */}
-        <div className="rounded-[32px] border border-cyan-200 bg-gradient-to-br from-white via-cyan-50/10 to-slate-50/20 p-5 sm:p-6 shadow-sm flex flex-col gap-5">
+        {/* Estimated Fare Breakdown Details */}
+        <div className="rounded-[32px] border border-white/10 bg-white/5 p-5 sm:p-6 shadow-2xl backdrop-blur-md flex flex-col gap-5">
           <div className="flex flex-wrap justify-between items-center gap-3">
             <div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-100 text-cyan-800 px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3.5 py-1 text-[11px] font-black uppercase tracking-wider">
                 🎫 Commuter Fare Board
               </span>
-              <h3 className="text-sm font-semibold text-slate-500 mt-1 uppercase tracking-wide">
+              <h3 className="text-xs font-black text-slate-400 mt-1 uppercase tracking-wider">
                 Live computation for Option {activeIdx + 1}
               </h3>
             </div>
-            <span className="bg-emerald-500/10 border border-emerald-300 text-emerald-800 text-xs font-black uppercase tracking-wider px-3.5 py-1.5 rounded-full">
+            <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-black uppercase tracking-wider px-3.5 py-1.5 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.15)]">
               Student-Verified 2026
             </span>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             {/* Regular Fare Card */}
-            <div className="relative rounded-2xl bg-white p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300">
-              <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+            <div className="relative rounded-2xl bg-white/5 p-5 border border-white/10 shadow-xl hover:-translate-y-1 transition duration-300">
+              <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
                 Regular Commuter Fare
               </span>
               <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-4xl font-black tracking-tight text-slate-900">
+                <span className="text-4xl font-black tracking-tight text-white">
                   {activeRoute.totalFareText || `₱${activeRoute.calculatedRegularFare || 0}`}
                 </span>
-                <span className="text-xs font-semibold text-slate-400">One-way</span>
+                <span className="text-xs font-black text-slate-500 uppercase">One-way</span>
               </div>
-              <p className="mt-2 text-xs text-slate-500 font-medium">Standard LTFRB fare matrix applied.</p>
+              <p className="mt-2 text-xs text-slate-500 font-bold uppercase tracking-wider">Standard LTFRB fare matrix applied.</p>
             </div>
 
             {/* Student Discount Card */}
-            <div className="relative rounded-2xl bg-gradient-to-br from-cyan-50 via-white to-cyan-50/40 p-5 border border-cyan-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-              <div className="absolute top-0 right-0 h-16 w-16 bg-[radial-gradient(circle_at_top_right,_rgba(6,182,212,0.15),_transparent_70%)] pointer-events-none" />
-              <span className="text-[11px] font-extrabold uppercase tracking-wider text-cyan-700 flex justify-between">
+            <div className="relative rounded-2xl bg-white/5 p-5 border border-white/10 shadow-xl hover:-translate-y-1 transition duration-300 overflow-hidden">
+              <span className="text-[11px] font-black uppercase tracking-wider text-emerald-400 flex justify-between">
                 <span>Student Discount Rate</span>
-                <span className="text-[10px] bg-cyan-100 text-cyan-800 font-black px-2 py-0.5 rounded-full uppercase">20% Off</span>
+                <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-black px-2 py-0.5 rounded-full uppercase">20% Off</span>
               </span>
               <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-4xl font-black tracking-tight text-cyan-700">
+                <span className="text-4xl font-black tracking-tight text-emerald-400">
                   {activeRoute.totalFareText
                     ? `₱${Math.round(parseFloat(activeRoute.totalFareText.replace(/[^\d.]/g, '')) * 0.8 || 0)}`
                     : `₱${activeRoute.calculatedStudentFare || 0}`}
                 </span>
-                <span className="text-xs font-semibold text-cyan-600/60">With Valid ID</span>
+                <span className="text-xs font-black text-emerald-500/60 uppercase">With Valid ID</span>
               </div>
-              <p className="mt-2 text-xs text-cyan-600/70 font-medium">Valid for active Filipino students only.</p>
+              <p className="mt-2 text-xs text-emerald-600/70 font-bold uppercase tracking-wider">Valid for active Filipino students only.</p>
             </div>
           </div>
         </div>
 
-
-        {/* Directly Integrated Live Google Map with Enlarge Option */}
+        {/* Directly Integrated Live Google Map */}
         {apiKey && origin && destination && (
           <div className="flex flex-col gap-2.5">
-            <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 border border-slate-200/60 p-3 rounded-2xl">
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900/40 border border-white/10 p-3.5 rounded-2xl">
               <div className="flex flex-col">
-                <span className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-700">Live Navigation Map</span>
-                <span className="text-[11px] text-slate-500 font-medium">Shows exactly how to commute on the transit route</span>
+                <span className="text-xs font-black uppercase tracking-[0.18em] text-emerald-400">Live Navigation Map</span>
+                <span className="text-[11px] text-slate-400 font-medium">Shows exactly how to commute on the transit route</span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsEnlarged(!isEnlarged)}
-                className="inline-flex items-center justify-center rounded-xl bg-white border border-slate-200/80 hover:bg-slate-50 px-3.5 py-1.5 text-xs font-bold text-slate-700 transition-colors shadow-sm cursor-pointer hover:border-cyan-300"
+                className="inline-flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 px-3.5 py-1.5 text-xs font-black text-slate-300 transition-colors shadow-sm cursor-pointer active:scale-95 uppercase tracking-wider"
               >
                 {isEnlarged ? 'Shrink Map ⤬' : 'Enlarge Map ⤢'}
               </button>
             </div>
 
-            <div className={`rounded-[24px] border border-cyan-100/70 bg-slate-50 overflow-hidden shadow-sm transition-all duration-300 w-full ${isEnlarged ? 'h-[620px] scale-[1.01]' : 'aspect-video min-h-[320px]'}`}>
+            <div className={`rounded-[24px] border border-white/10 bg-slate-950 overflow-hidden shadow-2xl transition-all duration-300 w-full ${isEnlarged ? 'h-[620px] scale-[1.01]' : 'aspect-video min-h-[320px]'}`}>
               <iframe
                 width="100%"
                 height="100%"
@@ -225,58 +223,58 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey }
 
         {/* Turn-by-turn steps */}
         <div className="grid gap-2.5">
-          <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-slate-400 mb-1 pl-1">Step-by-Step Commute Guide</p>
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-400 mb-1 pl-1">Step-by-Step Commute Guide</p>
           {activeRoute.steps.map((step, index) => {
             const trainGuide = getTrainIntermediateStations(step.departureStop, step.arrivalStop)
 
             return (
               <div
                 key={`${step.instruction}-${index}`}
-                className="rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 px-4 py-3.5 transition-all duration-200 hover:shadow-sm"
+                className="rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-3.5 transition-all duration-200 hover:shadow-xl"
               >
                 <div className="flex flex-col gap-2">
-                  <p className="text-sm font-bold text-slate-950 leading-relaxed">
+                  <p className="text-sm font-black text-slate-100 leading-relaxed">
                     {index + 1}. {step.instruction}
                   </p>
                   <div className="flex flex-wrap items-center gap-2 mt-1">
-                    <span className="rounded-full bg-white border border-slate-200 px-2.5 py-1 text-[11px] font-bold tracking-wider uppercase text-slate-600 shadow-sm">
+                    <span className="rounded-full bg-white/5 border border-white/10 px-2.5 py-1 text-[11px] font-black tracking-wider uppercase text-slate-300 shadow-sm">
                       {step.mode}
                     </span>
                     {step.line && (
-                      <span className="rounded-full bg-cyan-100/60 border border-cyan-100 px-2.5 py-1 text-[11px] font-bold tracking-wider uppercase text-cyan-700">
+                      <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-[11px] font-black tracking-wider uppercase text-emerald-400">
                         {step.line}
                       </span>
                     )}
                     {step.duration && (
-                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-500">
+                      <span className="rounded-full bg-white/5 border border-white/5 px-2.5 py-1 text-[11px] font-bold text-slate-400 uppercase tracking-wide">
                         {step.duration}
                       </span>
                     )}
                     {step.distance && (
-                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-500">
+                      <span className="rounded-full bg-white/5 border border-white/5 px-2.5 py-1 text-[11px] font-bold text-slate-400 uppercase tracking-wide">
                         {step.distance}
                       </span>
                     )}
                   </div>
                   {(step.departureStop || step.arrivalStop) && (
-                    <p className="mt-1.5 text-xs font-semibold text-slate-400 flex items-center gap-1.5 pl-0.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                    <p className="mt-1.5 text-xs font-black text-slate-400 flex items-center gap-1.5 pl-0.5 uppercase tracking-wide">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                       {step.departureStop || 'Departure'}{' → '}{step.arrivalStop || 'Destination'}
                     </p>
                   )}
 
                   {/* Detailed Train Station Guided List */}
                   {trainGuide && (
-                    <div className="mt-3.5 border-t border-slate-100 pt-3 flex flex-col gap-2">
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-cyan-700">
+                    <div className="mt-3.5 border-t border-white/10 pt-3 flex flex-col gap-2">
+                      <p className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-400">
                         🚞 Intermediate Stations Breakdown
                       </p>
-                      <div className="flex flex-col gap-2.5 border-l-2 border-cyan-300/40 ml-2.5 pl-3 pt-1">
+                      <div className="flex flex-col gap-2.5 border-l-2 border-emerald-500/40 ml-2.5 pl-3 pt-1">
                         {trainGuide.map((station, sIdx) => (
-                          <div key={sIdx} className="relative flex items-center gap-2 text-xs font-medium text-slate-700">
-                            <span className="h-2.5 w-2.5 rounded-full bg-cyan-500 border-2 border-white shadow-sm absolute -left-[18px]" />
-                            <span className="font-bold text-slate-900">{station.name}</span>
-                            <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-bold uppercase">
+                          <div key={sIdx} className="relative flex items-center gap-2 text-xs font-bold text-slate-300">
+                            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-slate-900 shadow-sm absolute -left-[18px]" />
+                            <span className="font-black text-white">{station.name}</span>
+                            <span className="text-[10px] bg-white/5 border border-white/10 text-slate-400 px-2 py-0.5 rounded font-black uppercase">
                               +{station.estMinutes}m
                             </span>
                           </div>
