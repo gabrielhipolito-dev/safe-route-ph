@@ -30,17 +30,19 @@ export default function Navbar() {
   }, [menuOpen])
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-950/85 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/85 backdrop-blur-md">
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <Link href="/" onClick={() => setMenuOpen(false)} className="group flex items-center gap-3 shrink-0">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#22D3EE,#0EA5E9)] text-sm font-black tracking-tight text-slate-950 shadow-[0_12px_28px_rgba(34,211,238,0.22)] transition-transform duration-300 group-hover:scale-105">
-            SR
-          </span>
+          <img 
+            src="/icon.png" 
+            alt="UniWolfe Route" 
+            className="h-11 w-11 rounded-2xl object-cover shadow-[0_12px_28px_rgba(52,211,153,0.3)] transition-transform duration-300 group-hover:scale-105 border border-white/10"
+          />
           <span className="flex flex-col leading-none">
-            <span className="text-base font-bold tracking-tight text-white sm:text-lg group-hover:text-cyan-400 transition-colors">
-              SafeRoute PH
+            <span className="text-base font-black tracking-tight text-white sm:text-lg group-hover:text-emerald-400 transition-colors uppercase">
+              UniWolfe Route
             </span>
-            <span className="text-xs text-slate-400 sm:text-sm">
+            <span className="text-xs text-slate-400 sm:text-sm font-medium">
               Student commute intelligence
             </span>
           </span>
@@ -56,9 +58,9 @@ export default function Navbar() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setMenuOpen(false)}
-                className={`rounded-xl px-3.5 py-2 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 ${
+                className={`rounded-xl px-3.5 py-2 text-sm font-black uppercase tracking-wider transition-all duration-300 hover:-translate-y-0.5 ${
                   isActive
-                    ? 'bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 shadow-[0_8px_24px_rgba(34,211,238,0.14)]'
+                    ? 'bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 shadow-[0_8px_24px_rgba(52,211,153,0.14)]'
                     : 'text-slate-300 hover:bg-white/5 hover:text-white border border-transparent'
                 }`}
               >
@@ -98,7 +100,7 @@ export default function Navbar() {
       <div id="mobile-navigation" className={`mx-auto max-w-7xl px-4 pb-4 sm:px-6 lg:px-8 md:hidden ${menuOpen ? 'block' : 'hidden'}`}>
         <div className="grid gap-2 rounded-3xl border border-white/10 bg-white/5 p-3 shadow-[0_18px_40px_rgba(2,6,23,0.35)] backdrop-blur-md">
           <div className="grid gap-1">
-            <p className="px-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-400">
+            <p className="px-2 text-[11px] font-black uppercase tracking-[0.22em] text-emerald-400">
               Navigate
             </p>
             <p className="px-2 text-sm text-slate-400">
@@ -115,14 +117,14 @@ export default function Navbar() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setMenuOpen(false)}
-                  className={`flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${
+                  className={`flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-black uppercase tracking-wider transition-colors ${
                     isActive
-                      ? 'bg-cyan-500/20 border border-cyan-400/30 text-cyan-300'
+                      ? 'bg-emerald-500/20 border border-emerald-400/30 text-emerald-300'
                       : 'border border-white/10 bg-slate-950/40 text-slate-200 hover:bg-white/10 hover:text-white'
                   }`}
                 >
                   <span>{item.label}</span>
-                  <span className={isActive ? 'text-cyan-400' : 'text-slate-500'}>→</span>
+                  <span className={isActive ? 'text-emerald-400' : 'text-slate-500'}>→</span>
                 </Link>
               )
             })}

@@ -1,7 +1,7 @@
 import SafetyClient from './SafetyClient'
 
 export const metadata = {
-  title: 'Safety Zones & Live Reports | SafeRoute PH',
+  title: 'Safety Zones & Live Reports | UniWolfe Route',
   description: 'Student-verified safety reports and interactive danger/caution/safe zone maps across Manila.'
 }
 
