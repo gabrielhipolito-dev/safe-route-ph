@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 const formatArrivalTime = (durationText = '') => {
   if (!durationText) return 'N/A'
@@ -75,9 +75,20 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey }
   const [activeIdx, setActiveIdx] = useState(0)
   const [isEnlarged, setIsEnlarged] = useState(false)
 
-  if (!allRoutes || allRoutes.length === 0) return null
+  const uniqueRoutes = useMemo(() => {
+    if (!allRoutes || !allRoutes.length) return []
+    const seen = new Set()
+    return allRoutes.filter((route) => {
+      const key = `${route.summary || ''}_${route.duration || ''}_${route.distance || ''}`.toLowerCase().trim()
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+  }, [allRoutes])
 
-  const activeRoute = allRoutes[activeIdx] || allRoutes[0]
+  if (!uniqueRoutes || uniqueRoutes.length === 0) return null
+
+  const activeRoute = uniqueRoutes[activeIdx] || uniqueRoutes[0]
 
   return (
     <div className="grid gap-6 lg:grid-cols-3 items-start text-slate-100">
@@ -86,7 +97,7 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey }
         <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 pl-1">
           Transit Route Options
         </p>
-        {allRoutes.map((routeOpt, rIndex) => (
+        {uniqueRoutes.map((routeOpt, rIndex) => (
           <button
             key={rIndex}
             onClick={() => setActiveIdx(rIndex)}
