@@ -76,7 +76,7 @@ export default function SearchWidget() {
 
   return (
     <div className="w-full">
-      <div className="rounded-[28px] border border-white/10 bg-slate-900/60 p-4 shadow-2xl sm:p-5 backdrop-blur-md">
+      <div className="rounded-[28px] border border-white/10 bg-slate-900/60 p-4 shadow-2xl sm:p-5 backdrop-blur-md hover:border-white/15 transition duration-300">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-400">
@@ -93,17 +93,7 @@ export default function SearchWidget() {
 
         <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr] md:items-center">
           <label className={`rounded-2xl border px-4 py-3 transition flex flex-col justify-between min-h-[82px] hover:-translate-y-0.5 duration-200 ${activeField === 'from' ? 'border-emerald-500/40 bg-emerald-500/10 shadow-[0_0_15px_rgba(52,211,153,0.15)]' : 'border-white/10 bg-white/5'}`}>
-            <div className="flex justify-between items-center w-full mb-1">
-              <span className="block text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">Origin</span>
-              <button
-                type="button"
-                onClick={handleUseCurrentLocation}
-                className="text-[10px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 px-2.5 py-0.5 rounded-full border border-emerald-500/20 font-black transition-all flex items-center gap-1 cursor-pointer uppercase tracking-wider active:scale-95 shadow-[0_0_10px_rgba(52,211,153,0.15)]"
-                title="Use my current GPS location"
-              >
-                📍 Use My Location
-              </button>
-            </div>
+            <span className="block text-[11px] font-black uppercase tracking-[0.18em] text-slate-400 mb-1">Origin</span>
             <input
               type="text"
               value={from}
@@ -153,13 +143,14 @@ export default function SearchWidget() {
           ))}
         </datalist>
 
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-500 mr-1">Quick Picks:</span>
             {quickPicks.map((hint) => (
               <button
                 key={hint}
                 onClick={() => handlePopularClick(hint)}
-                className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-black text-slate-300 transition hover:border-emerald-400/30 hover:bg-emerald-500/10 hover:text-emerald-300 active:scale-95"
+                className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-black text-slate-300 transition hover:border-emerald-400/30 hover:bg-emerald-500/10 hover:text-emerald-300 active:scale-95"
               >
                 {hint}
               </button>
@@ -167,15 +158,16 @@ export default function SearchWidget() {
           </div>
 
           <button
-            onClick={handleSearch}
-            disabled={isSubmitting}
-            className="rounded-2xl bg-emerald-500 px-6 py-3.5 text-sm font-black text-slate-950 transition hover:bg-emerald-400 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 uppercase tracking-wider shadow-[0_0_15px_rgba(52,211,153,0.35)] hover:shadow-[0_0_25px_rgba(52,211,153,0.5)] hover:-translate-y-0.5"
+            type="button"
+            onClick={handleUseCurrentLocation}
+            className="text-xs bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 px-4 py-2.5 rounded-xl border border-emerald-500/20 font-black transition-all flex items-center gap-2 cursor-pointer uppercase tracking-wider active:scale-95 shadow-[0_0_10px_rgba(52,211,153,0.15)] hover:border-emerald-500/40 hover:-translate-y-0.5"
+            title="Use my current GPS location"
           >
-            {isSubmitting ? 'Opening route...' : 'Find fare breakdown'}
+            📍 Pin My Current Location
           </button>
         </div>
 
-        <p className="mt-3 text-xs text-slate-400 font-medium">
+        <p className="mt-4 text-xs text-slate-400 font-medium">
           Start typing to see PH schools in autocomplete, tap a campus chip, or use the pin button to pull your exact location.
         </p>
 
@@ -185,10 +177,20 @@ export default function SearchWidget() {
           </p>
         )}
 
-        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-300">
-          <span className="rounded-full bg-white/5 border border-white/10 px-3 py-1 font-black uppercase tracking-wider">Transfers included</span>
-          <span className="rounded-full bg-white/5 border border-white/10 px-3 py-1 font-black uppercase tracking-wider">Student discount aware</span>
-          <span className="rounded-full bg-white/5 border border-white/10 px-3 py-1 font-black uppercase tracking-wider">2026 fare matrix</span>
+        <div className="mt-4 flex flex-wrap sm:flex-nowrap items-center gap-3 justify-between">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
+            <span className="rounded-full bg-white/5 border border-white/10 px-3 py-1 font-black uppercase tracking-wider">Transfers included</span>
+            <span className="rounded-full bg-white/5 border border-white/10 px-3 py-1 font-black uppercase tracking-wider">Student discount aware</span>
+            <span className="rounded-full bg-white/5 border border-white/10 px-3 py-1 font-black uppercase tracking-wider">2026 fare matrix</span>
+          </div>
+
+          <button
+            onClick={handleSearch}
+            disabled={isSubmitting}
+            className="rounded-2xl bg-emerald-500 px-6 py-4 text-sm font-black text-slate-950 transition hover:bg-emerald-400 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 uppercase tracking-wider shadow-[0_0_15px_rgba(52,211,153,0.35)] hover:shadow-[0_0_25px_rgba(52,211,153,0.5)] hover:-translate-y-0.5 whitespace-nowrap min-w-[210px] text-center flex items-center justify-center"
+          >
+            {isSubmitting ? 'Opening route...' : 'Find fare breakdown'}
+          </button>
         </div>
       </div>
     </div>
