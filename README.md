@@ -1,308 +1,145 @@
-# SafeRoute PH 🛡️
+# UniWolfe Route 🛡️
 
-A free, open-source, community-powered commute guide for Filipino students — built by students, for students.
+[![Build and Test](https://github.com/gabrielhipolito-dev/safe-route-ph/actions/workflows/build-check.yml/badge.svg)](https://github.com/gabrielhipolito-dev/safe-route-ph/actions/workflows/build-check.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](https://opensource.org/licenses/MIT)
+[![Open Source Love](https://img.shields.io/badge/Open%20Source-❤-emerald.svg)](https://github.com/gabrielhipolito-dev/safe-route-ph)
 
-🌐 **Live:** [saferoute-ph.vercel.app](https://saferoute-ph.vercel.app)
+A free, community-powered commute intelligence platform for Filipino students — built by students, for students.
 
----
-
-## About
-
-SafeRoute PH gives Filipino college students the safety data, route knowledge, and reporting tools they need to commute safely. No login required — anyone can view, and anyone can contribute.
-
-Built for the **Philippine Collegiate HackFest 2026** under the Sustainable Mobility & Transportation theme, aligned with **UN SDG 11: Sustainable Cities and Communities**.
+🌐 **Live Website:** [uniwolfe-route.vercel.app](https://uniwolfe-route.vercel.app)
 
 ---
 
-## Features
+## 📖 About UniWolfe Route
 
-| Feature | Description |
-|---|---|
-| 🗺️ Route Finder | Step-by-step jeepney and UV Express guides with multiple route options |
-| 🛡️ AI Safety Ratings | Gemini classifies student reviews into Safe, Caution, or Unsafe |
-| ⏰ Last Trip Tracker | Community-reported last departure times with student confirmations |
-| 💰 Fare Board | Current fares with 20% student discount as mandated by law |
-| 📖 First Timer Guide | Plain-language commute guide for students new to Manila |
-| 🚨 Report a Concern | Gemini-screened safety reports published after AI review |
-| 🗺️ Interactive Map | MapLibre GL map showing route paths, stop dots, and safety zones |
-| 🔀 Multiple Routes | Compare routes by fare, time, safety score, and transfers |
+UniWolfe Route is designed to help Filipino college students access crucial safety data, transit routes, and reporting tools to ensure they can commute safely across Metro Manila. From real-time transit options to community-reported danger zones and verified legal student fares, UniWolfe Route removes the guesswork from public transit.
+
+Aligned with **UN Sustainable Development Goal 11: Sustainable Cities and Communities**, this project was created for the **Philippine Collegiate HackFest 2026** under the theme of Sustainable Mobility.
 
 ---
 
-## Tech Stack
+## ⚡ Core Features
 
-| | |
-|---|---|
-| Framework | Next.js 15 + React |
-| Styling | Tailwind CSS |
-| Map | MapLibre GL + react-map-gl + OpenFreeMap tiles |
-| Database | Supabase — coming soon |
-| AI | Google Gemini API — coming soon |
-| Hosting | Vercel |
+| Feature | Description | Status |
+|---|---|---|
+| **🔰 First Timer Guide** | High-quality, verified commute tips and guidelines for newcomers navigating Manila. | Available ✅ |
+| **🛡️ AI Safety Ratings** | Live maps displaying community-submitted danger, caution, and safe zones. | Available ✅ |
+| **⏰ Last Trip Tracker** | Live, community-verified updates on jeepney and UV Express terminal times. | Available ✅ |
+| **💰 Fare Board** | Complete matrix for school-to-school routes with statutory 20% student discounts. | Available ✅ |
+| **🔀 Multi-Route Explorer** | Dynamic transit routing alternatives via Google Directions API. | Available ✅ |
 
 ---
 
-## Quick Start
+## 🛠️ Technology Stack
 
+* **Framework:** Next.js 15 (App Router) & React 19
+* **Styling:** Tailwind CSS (Theme: Anti-Gravity Cyberpunk & Neo-Brutalism)
+* **Database:** Supabase (PostgreSQL)
+* **AI Engine:** Google Gemini API
+* **Hosting:** Vercel
+
+---
+
+## 🚀 Getting Started
+
+Follow these steps to run UniWolfe Route locally:
+
+### 1. Prerequisites
+- [Node.js](https://nodejs.org/) (version 20 or higher)
+- npm (version 10 or higher)
+
+### 2. Installation
 ```bash
-git clone https://github.com/YOURUSERNAME/safe-route-ph.git
+# Clone the repository
+git clone https://github.com/gabrielhipolito-dev/safe-route-ph.git
+
+# Navigate into project folder
 cd safe-route-ph
+
+# Install dependencies
 npm install
+```
+
+### 3. Environment Variables
+Create a `.env.local` file in the root directory:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+DATABASE_URL=your_database_url
+GEMINI_API_KEY=your_gemini_api_key
+GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+```
+
+### 4. Running the Development Server
+```bash
 npm run dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) ✅
-
-> ⚠️ Database and AI are coming soon. App runs on sample data for now.
+Open [http://localhost:3000](http://localhost:3000) on your browser.
 
 ---
 
-## Environment Variables
+## 🏗️ Folder Structure & Architectural Blueprint
 
-> 🚧 Not required to run locally at this stage.
-
-When database integration is added, create a `.env.local` file:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=coming_soon
-NEXT_PUBLIC_SUPABASE_ANON_KEY=coming_soon
-DATABASE_URL=coming_soon
-GEMINI_API_KEY=coming_soon
-GOOGLE_MAPS_API_KEY=coming_soon
-```
-
-> Never commit `.env.local` to GitHub. It is already in `.gitignore`.
-
----
-
-## Folder Structure
+Understanding where everything goes makes contributing easy:
 
 ```
 safe-route-ph/
+├── .github/workflows/
+│   └── build-check.yml             ← GitHub Action for lint & build validation
 ├── app/
 │   ├── api/
-│   │   ├── gemini/route.js         ← Gemini AI endpoint
-│   │   ├── reports/route.js        ← Reports API
+│   │   ├── gemini/route.js         ← Gemini API endpoint
+│   │   ├── reports/route.js        ← Reports submission endpoint
 │   │   └── routes/route.js         ← Routes search API
 │   ├── components/
-│   │   ├── Navbar.jsx              ← Global navbar
-│   │   └── RouteMap.jsx            ← MapLibre interactive map
+│   │   ├── FeatureCards.jsx        ← Homepage features section
+│   │   ├── Navbar.jsx              ← Brand navigation
+│   │   └── SearchWidget.jsx        ← Main commute route finder
 │   ├── fares/
-│   │   └── page.jsx                ← Fare Board page
+│   │   └── page.jsx                ← Complete 2026 Fare matrix
 │   ├── first-timer/
-│   │   └── page.jsx                ← First Timer Guide page
+│   │   └── page.jsx                ← Guidance & tips page
 │   ├── last-trip/
-│   │   └── page.jsx                ← Last Trip Tracker page
+│   │   └── page.jsx                ← Last trip tracking page
 │   ├── route-result/
-│   │   └── page.jsx                ← Route Result with map
+│   │   └── page.jsx                ← Detailed Google Transit results
 │   ├── safety/
-│   │   └── page.jsx                ← Safety Reports page
-│   ├── globals.css                 ← Global styles
-│   ├── layout.jsx                  ← Root layout
-│   └── page.jsx                    ← Homepage with split search
-└── public/                         ← Static assets
+│   │   └── page.jsx                ← Google Maps native zone plotting
+│   ├── globals.css                 ← Tailwind styling rules
+│   ├── layout.jsx                  ← Base metadata & layout
+│   └── page.jsx                    ← Primary landing page
+└── public/                         ← Static assets (icon.png)
 ```
-
-### Where things go
-
-| What you are building | Where it goes |
-|---|---|
-| New page | `app/your-page/page.jsx` |
-| Reusable component | `app/components/YourComponent.jsx` |
-| API endpoint | `app/api/your-endpoint/route.js` |
-| Map component | `app/components/RouteMap.jsx` |
-| Global style | `app/globals.css` |
-| Image or icon | `public/` |
 
 ---
 
-## Contributor Guidelines
+## 🎨 Aesthetic & Design Rules
 
-### Code Rules
-
-- Add `'use client'` at the top of every page and component file
-- Use **Tailwind CSS** for all styling — no inline styles, no external UI libraries
-- Use **Next.js `Link`** for all internal navigation — never plain `<a>` tags
-- Use **dynamic import with `ssr: false`** for the RouteMap component
-- Keep components small and focused — one component does one thing
-- Use descriptive variable names — `routeData` not `d`, `isMenuOpen` not `x`
-
-### File Naming
-
-| Type | Rule | Example |
-|---|---|---|
-| Pages | lowercase folder name | `app/route-result/page.jsx` |
-| Components | PascalCase | `RouteCard.jsx`, `SafetyBadge.jsx` |
-| API routes | always named `route.js` | `app/api/reports/route.js` |
-| Utilities | camelCase | `formatDate.js`, `supabase.js` |
-
-### UI Colors
-
-Always use these exact hex values with Tailwind's arbitrary value syntax `bg-[#hex]`:
-
-| Color | Hex | Used for |
-|---|---|---|
-| Navy | `#0B1F3A` | Navbar, hero sections, headings |
-| Blue | `#1D4ED8` | Buttons, links, accents |
-| Light blue | `#EAF2FA` | Card backgrounds |
-| Page bg | `#F5F7FB` | Page background |
-| Text gray | `#555555` | Subtitles, descriptions |
-| Red | `#DC2626` | Unsafe at Night badge |
-| Orange | `#EA580C` | Overcharging badge |
-| Purple | `#7C3AED` | Harassment badge |
-| Green | `#16A34A` | Safe badge, success |
-| Amber | `#EA580C` | Last Trip Soon badge |
+To maintain high visual standards, all UI code MUST follow our **Anti-Gravity Cyberpunk & Neo-Brutalism** aesthetic:
+1. **Backgrounds:** Pure/Space Black (`bg-slate-950`).
+2. **Accents:** High-vibrancy Neon Emerald Green (`text-emerald-400`, `bg-emerald-500/10`) with ambient glowing drop shadows.
+3. **Typography:** Chunky, heavy sans-serif headings (`font-black tracking-tight uppercase`).
+4. **Interactive Bento Layouts:** Glassmorphic card design (`bg-white/5 border border-white/10 backdrop-blur-md hover:-translate-y-2 transition duration-300`).
 
 ---
 
-## Commit Message Rules
+## 🤝 Contribution Best Practices
 
-Every commit must follow this format:
+We welcome developers of all skill levels! Please follow these guidelines:
 
-```
-type(scope): short description
-```
-
-### Types
-
-| Type | When to use |
-|---|---|
-| `feat` | Adding a new feature |
-| `fix` | Fixing a bug |
-| `style` | Tailwind or CSS changes only — no logic change |
-| `refactor` | Rewriting code without changing behavior |
-| `docs` | README or documentation changes only |
-| `chore` | Config, dependencies, setup files |
-| `perf` | Performance improvements |
-
-### Scopes
-
-```
-navbar  home  route-finder  route-result  map
-safety  fares  first-timer  last-trip
-reports  gemini  supabase  readme  deps
-```
-
-### Good ✅
-
-```bash
-feat(route-finder): add search bar with split screen transition
-feat(map): add maplibre interactive map with route polylines
-feat(last-trip): add last trip tracker page with report form
-fix(navbar): fix mobile menu not closing on link click
-style(home): update hero section background and font size
-docs(readme): update folder structure with new pages
-chore(deps): install maplibre-gl and react-map-gl
-feat(gemini): add safety report classification prompt
-fix(reports): fix approved reports not showing on route page
-feat(route-result): add multiple route comparison cards
-```
-
-### Bad ❌
-
-```bash
-fix
-changes
-update
-final
-FINAL v2
-idk
-done
-testing
-asdfgh
-```
-
-### Rules
-
-- Lowercase only
-- Under 72 characters
-- Present tense — `add` not `added`
-- No period at the end
-- Reference issues when relevant — `fix(reports): fix badge color (#12)`
+1. **Keep it Focused:** One feature or bug fix per Pull Request.
+2. **Code Style:** Always use Tailwind CSS for all styling. Never use raw inline styles or ad-hoc classes.
+3. **Pull Request Validation:** Ensure `npm run build` succeeds locally with zero errors before opening a pull request.
+4. **Branching Model:** 
+   - Never commit to `main`. Create a descriptive feature branch: `feature/your-feature-name` or `fix/issue-description`.
+   - Submit a pull request targeting `main`.
 
 ---
 
-## Branch Naming Rules
+## 📄 License
 
-Never commit directly to `main`. Always create a new branch.
-
-```
-type/short-description
-```
-
-### Good ✅
-
-```bash
-feature/route-finder
-feature/safety-ratings
-feature/last-trip-tracker
-feature/fare-board
-feature/interactive-map
-feature/multiple-routes
-fix/navbar-mobile-menu
-fix/maplibre-ssr-error
-style/homepage-hero
-docs/update-readme
-chore/install-maplibre
-```
-
-### Bad ❌
-
-```bash
-main
-mybranch
-test
-final
-new
-fix2
-gabriels-changes
-```
-
-### Rules
-
-- Kebab-case — hyphens only, no spaces, no underscores
-- Short and descriptive
-- Always branch off `main`
-- Delete your branch after PR is merged
+Distributed under the MIT License. See [LICENSE](LICENSE) for more details.
 
 ---
 
-## Pull Request Rules
-
-- One feature or fix per PR — do not bundle unrelated changes
-- `npm run dev` must run with zero errors before opening a PR
-- Write a clear description — what changed and why
-- Do not touch files unrelated to your change
-- Never commit `node_modules`, `.env.local`, or build output
-- Map components must use `dynamic import` with `ssr: false`
-
----
-
-## Roadmap
-
-- [x] Project setup with Next.js and Tailwind
-- [x] Homepage with split screen search
-- [x] Navbar with all page links
-- [x] First Timer Guide page
-- [x] Safety Reports page with report form
-- [x] Last Trip Tracker page
-- [x] Fare Board page
-- [x] Route Result page with step by step guide
-- [x] Interactive MapLibre map with route polylines
-- [x] Multiple route comparison cards
-- [ ] Supabase database integration
-- [ ] Gemini AI safety report classification
-- [ ] Gemini AI route suggestion fallback
-- [ ] Real route data from student submissions
-- [ ] PWA mobile support
-- [ ] Expand to UST, FEU, PUP, Ateneo routes
-
----
-
-## License
-
-MIT — free to use, modify, and distribute with credit. See [LICENSE](LICENSE).
-
----
-
-*SafeRoute PH — Because every student deserves to get home safely.* 🛡️
+*UniWolfe Route — Because every student deserves to get home safely.* 🛡️
