@@ -394,6 +394,95 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                           (() => {
                             let text = step.instruction || ''
                             const lower = text.toLowerCase()
+
+                            const linesConfig = [
+                              {
+                                name: 'LRT-1',
+                                keywords: ['lrt-1', 'dr santos', 'baclaran', 'roosevelt', 'fpj'],
+                                stops: [
+                                  'Baclaran', 'EDSA', 'Libertad', 'Gil Puyat', 'Vito Cruz', 'Quirino',
+                                  'Pedro Gil', 'UN Avenue', 'Central Terminal', 'Carriedo',
+                                  'Doroteo Jose', 'Bambang', 'Tayuman', 'Blumentritt', 'Abad Santos',
+                                  'R. Papa', '5th Avenue', 'Monumento', 'Balintawak', 'Roosevelt (FPJ)',
+                                  'Redemptorist', 'MIA', 'Asia World', 'Ninoy Aquino', 'Dr. Santos'
+                                ]
+                              },
+                              {
+                                name: 'LRT-2',
+                                keywords: ['lrt-2', 'recto', 'antipolo'],
+                                stops: [
+                                  'Recto', 'Legarda', 'Pureza', 'V. Mapa', 'J. Ruiz', 'Gilmore',
+                                  'Betty Go-Belmonte', 'Araneta Center-Cubao', 'Anonas', 'Katipunan',
+                                  'Santolan', 'Marikina-Pasig', 'Antipolo'
+                                ]
+                              },
+                              {
+                                name: 'MRT-3',
+                                keywords: ['mrt-3', 'north avenue', 'taft'],
+                                stops: [
+                                  'North Avenue', 'Quezon Avenue', 'Kamuning', 'Araneta Center-Cubao',
+                                  'Santolan-Anand', 'Ortigas', 'Shaw Boulevard', 'Boni', 'Guadalupe',
+                                  'Buendia', 'Ayala', 'Magallanes', 'Taft Avenue'
+                                ]
+                              }
+                            ]
+
+                            const activeLine = linesConfig.find(l =>
+                              lower.includes(l.name.toLowerCase()) ||
+                              l.keywords.some(k => lower.includes(k)) ||
+                              l.stops.some(s => lower.includes(s.toLowerCase())) ||
+                              (index > 0 && (activeRoute.steps[index - 1]?.instruction || '').toLowerCase().includes(l.name.toLowerCase()))
+                            )
+
+                            if (activeLine && (lower.includes('train') || lower.includes('lrt') || lower.includes('mrt') || lower.includes('tram'))) {
+                              const matchesStation = (stopName, text) => {
+                                const clStop = stopName.toLowerCase()
+                                const clText = text.toLowerCase()
+                                if (clText.includes(clStop) || clStop.includes(clText)) return true
+
+                                const aliases = {
+                                  'un avenue': ['united nations', 'un avenue', 'un'],
+                                  'united nations': ['un avenue', 'united nations', 'un'],
+                                  'roosevelt': ['fpj', 'fernando poe', 'roosevelt'],
+                                  'fpj': ['fernando poe', 'roosevelt', 'fpj'],
+                                  'doroteo jose': ['d jose', 'doroteo jose'],
+                                  'araneta center-cubao': ['cubao', 'araneta center', 'cubao mrt', 'cubao lrt']
+                                }
+
+                                for (const [key, variants] of Object.entries(aliases)) {
+                                  if (clStop.includes(key) && variants.some(v => clText.includes(v))) {
+                                    return true
+                                  }
+                                }
+                                return false
+                              }
+
+                              let fromIdx = step.departureStop ? activeLine.stops.findIndex(s => matchesStation(s, step.departureStop)) : -1
+                              let toIdx = step.arrivalStop ? activeLine.stops.findIndex(s => matchesStation(s, step.arrivalStop)) : -1
+
+                              if (fromIdx === -1 || toIdx === -1) {
+                                activeLine.stops.forEach((s, idx) => {
+                                  if (matchesStation(s, lower)) {
+                                    if (fromIdx === -1) fromIdx = idx
+                                    else toIdx = idx
+                                  }
+                                })
+
+                                if (fromIdx === -1 && index > 0) {
+                                  const prevLower = (activeRoute.steps[index - 1]?.instruction || '').toLowerCase()
+                                  activeLine.stops.forEach((s, idx) => {
+                                    if (matchesStation(s, prevLower)) {
+                                      fromIdx = idx
+                                    }
+                                  })
+                                }
+                              }
+
+                              if (fromIdx !== -1 && toIdx !== -1) {
+                                return `${activeLine.name} Train: ${activeLine.stops[fromIdx]} to ${activeLine.stops[toIdx]}`
+                              }
+                            }
+
                             if (lower.includes('tram towards dr. santos') || lower.includes('tram towards baclaran') || lower.includes('tram towards roosevelt') || lower.includes('tram towards fpj')) {
                               text = text.replace(/tram/i, 'LRT-1 Train')
                             } else if (lower.includes('tram towards recto') || lower.includes('tram towards antipolo')) {
