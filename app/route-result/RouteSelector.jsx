@@ -21,6 +21,11 @@ const formatArrivalTime = (durationText = '') => {
 }
 
 const getStepFare = (step) => {
+  // Use real data: If the scraper/Google API already provides a real step-specific fare, use it first
+  if (step && step.fare) return step.fare
+  if (step && step.fareText) return step.fareText
+
+  // Fallback: If the API returns steps without individual fares, use local official base rate data:
   if (!step || !step.mode) return '₱0'
 
   const mode = step.mode.toLowerCase()
@@ -67,7 +72,6 @@ const getStepFare = (step) => {
   return '₱15'
 }
 
-
 const getTrainIntermediateStations = (departure, arrival) => {
   if (!departure || !arrival) return null
 
@@ -81,6 +85,10 @@ const getTrainIntermediateStations = (departure, arrival) => {
     "North Avenue", "Quezon Avenue", "GMA-Kamuning", "Araneta Center-Cubao",
     "Santolan-Annas", "Ortigas", "Shaw Boulevard", "Boni", "Guadalupe",
     "Buendia", "Ayala", "Magallanes", "Taft Avenue"
+  ];
+  const lrt2 = [
+    "Recto", "Legarda", "Pureza", "V. Mapa", "J. Ruiz", "Gilmore", "Betty Go-Belmonte",
+    "Araneta Center-Cubao", "Anonas", "Katipunan", "Santolan", "Marikina-Pasig", "Antipolo"
   ];
 
   const matchStop = (stops, term) => {
@@ -99,6 +107,12 @@ const getTrainIntermediateStations = (departure, arrival) => {
     toIdx = matchStop(mrt3, arrival)
     if (fromIdx !== -1 && toIdx !== -1) {
       stopsList = mrt3
+    } else {
+      fromIdx = matchStop(lrt2, departure)
+      toIdx = matchStop(lrt2, arrival)
+      if (fromIdx !== -1 && toIdx !== -1) {
+        stopsList = lrt2
+      }
     }
   }
 
@@ -122,6 +136,7 @@ const getTrainIntermediateStations = (departure, arrival) => {
 export default function RouteSelector({ allRoutes, origin, destination, apiKey, nearestStations }) {
   const [activeIdx, setActiveIdx] = useState(0)
   const [isEnlarged, setIsEnlarged] = useState(false)
+  const [mapMode, setMapMode] = useState('transit')
 
   const uniqueRoutes = useMemo(() => {
     if (!allRoutes || !allRoutes.length) return []
@@ -142,17 +157,23 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
 
   const iframeSrc = useMemo(() => {
     if (!apiKey || !origin || !destination) return ''
-    let mode = 'transit'
+
+    let waypoint = ''
     if (activeRoute && activeRoute.steps && activeRoute.steps.length > 0) {
-      const activeMode = (activeRoute.steps[0].mode || '').toLowerCase()
-      if (activeMode.includes('walk')) {
-        mode = 'walking'
-      } else if (activeMode.includes('drive') || activeMode.includes('car')) {
-        mode = 'driving'
+      const transitStep = activeRoute.steps.find(
+        s => (s.mode || '').toLowerCase().includes('transit') || (s.mode || '').toLowerCase().includes('train') || s.arrivalStop
+      )
+      if (transitStep && transitStep.arrivalStop) {
+        waypoint = transitStep.arrivalStop
       }
     }
-    return `https://www.google.com/maps/embed/v1/directions?key=${apiKey}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=${mode}`
-  }, [apiKey, origin, destination, activeRoute])
+
+    let src = `https://www.google.com/maps/embed/v1/directions?key=${apiKey}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=${mapMode}`
+    if (waypoint && mapMode === 'transit') {
+      src += `&waypoints=${encodeURIComponent(waypoint)}`
+    }
+    return src
+  }, [apiKey, origin, destination, activeRoute, mapMode])
 
   return (
     <div className="flex flex-col gap-6">
@@ -269,22 +290,35 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                   <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-400">Live Navigation Map</span>
                   <span className="text-[10px] text-slate-400 font-medium leading-tight">Interactive Google transit route map</span>
                 </div>
-                <div className="flex gap-2">
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=transit`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 px-3 py-1.5 text-xs font-black text-emerald-400 transition-colors shadow-sm cursor-pointer active:scale-95 uppercase tracking-wider"
-                  >
-                    Open in Maps ↗
-                  </a>
-                  <button
-                    type="button"
-                    onClick={() => setIsEnlarged(!isEnlarged)}
-                    className="inline-flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1.5 text-xs font-black text-slate-300 transition-colors shadow-sm cursor-pointer active:scale-95 uppercase tracking-wider"
-                  >
-                    {isEnlarged ? 'Shrink Map ⤬' : 'Enlarge Map ⤢'}
-                  </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex bg-white/5 border border-white/10 rounded-xl p-1 gap-1">
+                    {['transit', 'walking', 'driving'].map((m) => (
+                      <button
+                        key={m}
+                        onClick={() => setMapMode(m)}
+                        className={`px-3 py-1 text-xs font-black rounded-lg uppercase tracking-wider transition duration-200 cursor-pointer ${mapMode === m ? 'bg-emerald-500 text-slate-950 font-black shadow-md' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
+                      >
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-1">
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=${mapMode}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 px-3 py-1.5 text-xs font-black text-emerald-400 transition-colors shadow-sm cursor-pointer active:scale-95 uppercase tracking-wider"
+                    >
+                      Open in Maps ↗
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setIsEnlarged(!isEnlarged)}
+                      className="inline-flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1.5 text-xs font-black text-slate-300 transition-colors shadow-sm cursor-pointer active:scale-95 uppercase tracking-wider"
+                    >
+                      {isEnlarged ? 'Shrink Map ⤬' : 'Enlarge Map ⤢'}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -319,11 +353,11 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                       <p className="text-xs font-black text-slate-100 leading-relaxed">
                         {index + 1}. {step.instruction}
                       </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                       <span className="rounded-full bg-emerald-500/15 border border-emerald-500/25 px-2.5 py-0.5 text-[10px] font-black tracking-wider uppercase text-emerald-400 shrink-0">
                         💵 Payment: {estimatedFare}
                       </span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                       <span className="rounded-full bg-white/5 border border-white/10 px-2.5 py-0.5 text-[10px] font-black tracking-wider uppercase text-slate-300 shadow-sm">
                         {step.mode}
                       </span>

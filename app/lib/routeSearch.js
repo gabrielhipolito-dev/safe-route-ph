@@ -264,7 +264,48 @@ const getGoogleNavigation = async (from, to) => {
   }
 }
 
-export const getRouteSearchResult = async (from, to) => {
+const normalizeLocationName = (name = '') => {
+  const clean = name.trim().toLowerCase().replace(/[.,]/g, '')
+  const schoolAbbr = {
+    'ust': 'University of Santo Tomas, Manila',
+    'adamson': 'Adamson University, Manila',
+    'adu': 'Adamson University, Manila',
+    'up': 'University of the Philippines Diliman',
+    'upd': 'University of the Philippines Diliman',
+    'up diliman': 'University of the Philippines Diliman',
+    'dlsu': 'De La Salle University, Manila',
+    'feu': 'Far Eastern University, Manila',
+    'ue': 'University of the East, Manila',
+    'pup': 'Polytechnic University of the Philippines, Manila',
+    'mapua': 'Mapua University, Manila',
+    'admu': 'Ateneo de Manila University',
+    'plm': 'Pamantasan ng Lungsod ng Maynila',
+    'nu': 'National University, Manila',
+    'san beda': 'San Beda University, Manila',
+    'sbca': 'San Beda College Alabang',
+    'tup': 'Technological University of the Philippines, Manila',
+    'rtu': 'Rizal Technological University',
+    'ceu': 'Centro Escolar University, Manila',
+    'um': 'University of Mindanao',
+    'usc': 'University of San Carlos, Cebu',
+    'usjr': 'University of San Jose-Recoletos, Cebu',
+    'slu': 'Saint Louis University, Baguio',
+    'cpu': 'Central Philippine University, Iloilo',
+    'su': 'Silliman University, Dumaguete'
+  }
+
+  for (const [abbr, full] of Object.entries(schoolAbbr)) {
+    if (clean === abbr || clean.includes(` ${abbr} `) || clean.startsWith(`${abbr} `) || clean.endsWith(` ${abbr}`)) {
+      return full
+    }
+  }
+  return name
+}
+
+export const getRouteSearchResult = async (fromInput, toInput) => {
+  const from = normalizeLocationName(fromInput)
+  const to = normalizeLocationName(toInput)
+
   // Basic validation: same origin/destination -> return error
   const normalizeForCompare = (v = '') => v.toLowerCase().replace(/\s+/g, ' ').trim()
   if (normalizeForCompare(from) === normalizeForCompare(to)) {
