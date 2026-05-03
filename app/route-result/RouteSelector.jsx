@@ -474,13 +474,35 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                           const line = activeLine.name
                           const allStops = activeLine.stops
 
+                          const matchesStation = (stopName, text) => {
+                            const clStop = stopName.toLowerCase()
+                            const clText = text.toLowerCase()
+                            if (clText.includes(clStop) || clStop.includes(clText)) return true
+
+                            const aliases = {
+                              'un avenue': ['united nations', 'un avenue', 'un'],
+                              'united nations': ['un avenue', 'united nations', 'un'],
+                              'roosevelt': ['fpj', 'fernando poe', 'roosevelt'],
+                              'fpj': ['fernando poe', 'roosevelt', 'fpj'],
+                              'doroteo jose': ['d jose', 'doroteo jose'],
+                              'araneta center-cubao': ['cubao', 'araneta center', 'cubao mrt', 'cubao lrt']
+                            }
+
+                            for (const [key, variants] of Object.entries(aliases)) {
+                              if (clStop.includes(key) && variants.some(v => clText.includes(v))) {
+                                return true
+                              }
+                            }
+                            return false
+                          }
+
                           let stations = []
-                          let fromIdx = step.departureStop ? allStops.findIndex(s => s.toLowerCase().includes(step.departureStop.toLowerCase()) || step.departureStop.toLowerCase().includes(s.toLowerCase())) : -1
-                          let toIdx = step.arrivalStop ? allStops.findIndex(s => s.toLowerCase().includes(step.arrivalStop.toLowerCase()) || step.arrivalStop.toLowerCase().includes(s.toLowerCase())) : -1
+                          let fromIdx = step.departureStop ? allStops.findIndex(s => matchesStation(s, step.departureStop)) : -1
+                          let toIdx = step.arrivalStop ? allStops.findIndex(s => matchesStation(s, step.arrivalStop)) : -1
 
                           if (fromIdx === -1 || toIdx === -1) {
                             allStops.forEach((s, idx) => {
-                              if (lower.includes(s.toLowerCase())) {
+                              if (matchesStation(s, lower)) {
                                 if (fromIdx === -1) fromIdx = idx
                                 else toIdx = idx
                               }
@@ -489,7 +511,7 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                             if (fromIdx === -1 && index > 0) {
                               const prevLower = (activeRoute.steps[index - 1]?.instruction || '').toLowerCase()
                               allStops.forEach((s, idx) => {
-                                if (prevLower.includes(s.toLowerCase())) {
+                                if (matchesStation(s, prevLower)) {
                                   fromIdx = idx
                                 }
                               })
@@ -507,10 +529,16 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                             stations = allStops.slice(0, 5)
                           }
 
+                          const originStation = fromIdx !== -1 ? allStops[fromIdx] : 'Origin'
+                          const destStation = toIdx !== -1 ? allStops[toIdx] : 'Destination'
+                          const headerText = fromIdx !== -1 && toIdx !== -1
+                            ? `${line}: ${originStation} to ${destStation}`
+                            : `${line} Train`
+
                           return (
                             <>
                               <p className="text-[10px] font-black uppercase tracking-wider text-emerald-300 mb-1">
-                                🚆 {line} Station Stops:
+                                🚆 {headerText}
                               </p>
                               <ul className="grid gap-1 pl-3.5 list-disc text-slate-300 font-bold text-xs mt-1">
                                 {stations.map((st, sIdx) => (
