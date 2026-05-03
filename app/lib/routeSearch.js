@@ -31,7 +31,7 @@ const computeLegFare = (step) => {
   if (mode.includes('bus')) {
     const baseRegular = 15
     const perKm = 2.2
-    const totalRegular = baseRegular + Math.max(0, distanceKm - 4) * perKm
+    const totalRegular = Math.min(baseRegular + Math.max(0, distanceKm - 4) * perKm, 1800)
     const totalStudent = totalRegular * 0.8
     return { regular: Math.round(totalRegular), student: Math.round(totalStudent) }
   }
@@ -39,14 +39,14 @@ const computeLegFare = (step) => {
   if (mode.includes('tram') || mode.includes('train') || mode.includes('subway') || mode.includes('rail')) {
     const baseRegular = 13
     const perKm = 1.2
-    const totalRegular = baseRegular + distanceKm * perKm
+    const totalRegular = Math.min(baseRegular + distanceKm * perKm, 1800)
     const totalStudent = totalRegular * 0.8
     return { regular: Math.round(totalRegular), student: Math.round(totalStudent) }
   }
 
   const baseRegular = 13
   const perKm = 1.8
-  const totalRegular = baseRegular + Math.max(0, distanceKm - 4) * perKm
+  const totalRegular = Math.min(baseRegular + Math.max(0, distanceKm - 4) * perKm, 1800)
   const totalStudent = totalRegular * 0.8
   return { regular: Math.round(totalRegular), student: Math.round(totalStudent) }
 }
@@ -298,6 +298,14 @@ const normalizeLocationName = (name = '') => {
     'adu': 'Adamson University, Manila',
     'up': 'University of the Philippines Diliman',
     'up diliman': 'University of the Philippines Diliman',
+    'up baguio': 'University of the Philippines Baguio',
+    'upb': 'University of the Philippines Baguio',
+    'uplb': 'University of the Philippines Los Banos',
+    'up los banos': 'University of the Philippines Los Banos',
+    'upm': 'University of the Philippines Manila',
+    'up manila': 'University of the Philippines Manila',
+    'upv': 'University of the Philippines Visayas',
+    'up visayas': 'University of the Philippines Visayas',
     'dlsu': 'De La Salle University, Manila',
     'feu': 'Far Eastern University, Manila',
     'ue': 'University of the East, Manila',
@@ -322,7 +330,7 @@ const normalizeLocationName = (name = '') => {
   }
 
   for (const [abbr, full] of Object.entries(schoolAbbr)) {
-    if (clean === abbr || clean === full.toLowerCase()) {
+    if (clean === abbr || clean === full.toLowerCase() || clean.includes(abbr)) {
       return full
     }
   }

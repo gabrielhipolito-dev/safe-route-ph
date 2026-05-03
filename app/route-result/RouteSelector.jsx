@@ -47,22 +47,23 @@ const getStepFare = (step) => {
     return '₱0 (Free)'
   }
 
-  // Handle multi-hour provincial long haul trips
+  // Handle multi-hour provincial long haul trips (only for 3+ hours or multi-day trips)
   const daysMatch = durationText.match(/(\d+)\s*day/i)
   const hoursMatch = durationText.match(/(\d+)\s*hr/i) || durationText.match(/(\d+)\s*hour/i)
 
-  if (daysMatch || hoursMatch) {
-    const days = daysMatch ? parseInt(daysMatch[1], 10) : 0
-    const hours = hoursMatch ? parseInt(hoursMatch[1], 10) : 0
-    const totalHours = (days * 24) + hours
+  const days = daysMatch ? parseInt(daysMatch[1], 10) : 0
+  const hours = hoursMatch ? parseInt(hoursMatch[1], 10) : 0
+  const totalHours = (days * 24) + hours
 
+  if (days > 0 || hours >= 3) {
     if (mode.includes('bus') || instruction.includes('bus')) {
-      return `₱${totalHours * 180 + 150}`
+      const calculated = totalHours * 180 + 150
+      return `₱${Math.min(calculated, 1800)}`
     }
     if (mode.includes('train') || instruction.includes('lrt') || instruction.includes('mrt')) {
-      return `₱${totalHours * 120 + 80}`
+      return `₱${Math.min(totalHours * 120 + 80, 1800)}`
     }
-    return `₱${totalHours * 150}`
+    return `₱${Math.min(totalHours * 150, 1800)}`
   }
 
   // Official May 2026 LRTA / LTFRB Rates
@@ -72,7 +73,7 @@ const getStepFare = (step) => {
     const base = 15
     const perKm = 1.21
     const total = base + distanceKm * perKm
-    return `₱${Math.ceil(total)}`
+    return `₱${Math.min(Math.ceil(total), 1800)}`
   }
 
   // 2. Bus Commute
@@ -82,7 +83,7 @@ const getStepFare = (step) => {
     const perKm = isAircon ? 2.98 : 2.49
     const minDistance = 5
     const total = base + Math.max(0, distanceKm - minDistance) * perKm
-    return `₱${Math.ceil(total)}`
+    return `₱${Math.min(Math.ceil(total), 1800)}`
   }
 
   // 3. Jeepney / Tricycle Commute
@@ -92,10 +93,10 @@ const getStepFare = (step) => {
     const perKm = isModern ? 2.40 : 2.00
     const minDistance = 4
     const total = base + Math.max(0, distanceKm - minDistance) * perKm
-    return `₱${Math.ceil(total)}`
+    return `₱${Math.min(Math.ceil(total), 1800)}`
   }
 
-  return `₱${Math.ceil(14 + Math.max(0, distanceKm - 4) * 2)}`
+  return `₱${Math.min(Math.ceil(14 + Math.max(0, distanceKm - 4) * 2), 1800)}`
 }
 
 const getTrainIntermediateStations = (departure, arrival) => {
@@ -316,7 +317,7 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                   {routeOpt.distance || 'N/A'}
                 </span>
                 <span className="text-xs font-black uppercase tracking-wide text-emerald-400">
-                  {routeOpt.totalFareText || `₱${routeOpt.calculatedRegularFare || 0} reg`}
+                  {`₱${routeOpt.steps.reduce((acc, st) => acc + (getStepFare(st).includes('Free') ? 0 : parseInt(getStepFare(st).replace(/[^\d]/g, ''), 10) || 0), 0)} REG`}
                 </span>
               </div>
             </button>
@@ -508,7 +509,7 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                 </span>
                 <div className="flex items-baseline gap-1.5 mt-1">
                   <span className="text-3xl font-black tracking-tight text-white">
-                    {activeRoute.totalFareText || `₱${activeRoute.calculatedRegularFare || 0}`}
+                    {`₱${activeRoute.steps.reduce((acc, st) => acc + (getStepFare(st).includes('Free') ? 0 : parseInt(getStepFare(st).replace(/[^\d]/g, ''), 10) || 0), 0)}`}
                   </span>
                   <span className="text-[10px] font-black text-slate-500 uppercase">One-way</span>
                 </div>
@@ -521,9 +522,7 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                 </span>
                 <div className="flex items-baseline gap-1 mt-1">
                   <span className="text-3xl font-black tracking-tight text-emerald-400">
-                    {activeRoute.totalFareText
-                      ? `₱${Math.round(parseFloat(activeRoute.totalFareText.replace(/[^\d.]/g, '')) * 0.8 || 0)}`
-                      : `₱${activeRoute.calculatedStudentFare || 0}`}
+                    {`₱${Math.round(activeRoute.steps.reduce((acc, st) => acc + (getStepFare(st).includes('Free') ? 0 : parseInt(getStepFare(st).replace(/[^\d]/g, ''), 10) || 0), 0) * 0.8)}`}
                   </span>
                   <span className="text-[10px] font-black text-emerald-500/60 uppercase">With valid ID</span>
                 </div>
