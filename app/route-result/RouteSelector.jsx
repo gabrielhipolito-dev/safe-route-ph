@@ -389,7 +389,22 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                   <div className="flex flex-col gap-2 w-full">
                     <div className="flex flex-wrap items-center justify-between gap-2 w-full">
                       <p className={`text-xs font-black leading-relaxed ${isActiveStep ? 'text-emerald-300' : 'text-slate-100'}`}>
-                        {index + 1}. {step.instruction}
+                        {index + 1}. {
+                          (() => {
+                            let text = step.instruction || ''
+                            const lower = text.toLowerCase()
+                            if (lower.includes('tram towards dr. santos') || lower.includes('tram towards baclaran') || lower.includes('tram towards roosevelt') || lower.includes('tram towards fpj')) {
+                              text = text.replace(/tram/i, 'LRT-1 Train')
+                            } else if (lower.includes('tram towards recto') || lower.includes('tram towards antipolo')) {
+                              text = text.replace(/tram/i, 'LRT-2 Train')
+                            } else if (lower.includes('tram towards north avenue') || lower.includes('tram towards taft')) {
+                              text = text.replace(/tram/i, 'MRT-3 Train')
+                            } else if (lower.includes('tram')) {
+                              text = text.replace(/tram/i, 'LRT Train')
+                            }
+                            return text
+                          })()
+                        }
                       </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
