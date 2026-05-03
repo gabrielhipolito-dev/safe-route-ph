@@ -162,6 +162,9 @@ const getNearestTransitStation = async (location, apiKey) => {
     if (!response.ok) return { error: `HTTP ${response.status}: ${response.statusText}` }
 
     const payload = await response.json()
+    if (payload.status === 'ZERO_RESULTS') {
+      return null
+    }
     if (payload.status !== 'OK') {
       return { error: payload.error_message || payload.status }
     }
@@ -239,28 +242,46 @@ const getGoogleNavigation = async (from, to) => {
       return mapGoogleNavigation(payload)
     }
 
-    // Fallback: Try getting a walking route if no transit route is found
+    // Fallback 1: Try getting a walking route if no transit route is found
     url.searchParams.set('mode', 'walking')
     url.searchParams.delete('departure_time')
     url.searchParams.set('alternatives', 'true')
 
     const walkResponse = await fetch(url.toString(), { cache: 'no-store' })
-    if (!walkResponse.ok) return { error: `HTTP ${walkResponse.status}: ${walkResponse.statusText}` }
-
-    const walkPayload = await walkResponse.json()
-    if (walkPayload.status === 'OK' && walkPayload.routes && walkPayload.routes.length > 0) {
-      const mapped = mapGoogleNavigation(walkPayload)
-      if (mapped && mapped.allRoutes) {
-        mapped.allRoutes = mapped.allRoutes.map((r, i) => ({
-          ...r,
-          summary: r.summary ? `${r.summary} (Walking)` : `Walking Option ${i + 1}`
-        }))
-        if (mapped.summary) mapped.summary = `${mapped.summary} (Walking)`
+    if (walkResponse.ok) {
+      const walkPayload = await walkResponse.json()
+      if (walkPayload.status === 'OK' && walkPayload.routes && walkPayload.routes.length > 0) {
+        const mapped = mapGoogleNavigation(walkPayload)
+        if (mapped && mapped.allRoutes) {
+          mapped.allRoutes = mapped.allRoutes.map((r, i) => ({
+            ...r,
+            summary: r.summary ? `${r.summary} (Walking)` : `Walking Option ${i + 1}`
+          }))
+          if (mapped.summary) mapped.summary = `${mapped.summary} (Walking)`
+        }
+        return mapped
       }
-      return mapped
     }
 
-    return { error: walkPayload.error_message || walkPayload.status || 'No transit or walking route found.' }
+    // Fallback 2: Try driving route if both transit and walking fail
+    url.searchParams.set('mode', 'driving')
+    const driveResponse = await fetch(url.toString(), { cache: 'no-store' })
+    if (driveResponse.ok) {
+      const drivePayload = await driveResponse.json()
+      if (drivePayload.status === 'OK' && drivePayload.routes && drivePayload.routes.length > 0) {
+        const mapped = mapGoogleNavigation(drivePayload)
+        if (mapped && mapped.allRoutes) {
+          mapped.allRoutes = mapped.allRoutes.map((r, i) => ({
+            ...r,
+            summary: r.summary ? `${r.summary} (Driving)` : `Driving Option ${i + 1}`
+          }))
+          if (mapped.summary) mapped.summary = `${mapped.summary} (Driving)`
+        }
+        return mapped
+      }
+    }
+
+    return { error: 'No transit, walking, or driving route found.' }
   } catch (err) {
     return { error: err.message || 'An error occurred during transit lookup.' }
   }
@@ -295,11 +316,13 @@ const normalizeLocationName = (name = '') => {
     'usjr': 'University of San Jose-Recoletos, Cebu',
     'slu': 'Saint Louis University, Baguio',
     'cpu': 'Central Philippine University, Iloilo',
-    'su': 'Silliman University, Dumaguete'
+    'su': 'Silliman University, Dumaguete',
+    'pcu': 'Philippine Christian University, Manila',
+    'philippine christian university': 'Philippine Christian University, Manila'
   }
 
   for (const [abbr, full] of Object.entries(schoolAbbr)) {
-    if (clean === abbr || clean.includes(abbr) || abbr.includes(clean)) {
+    if (clean === abbr || clean === full.toLowerCase()) {
       return full
     }
   }
@@ -345,19 +368,7 @@ export const getRouteSearchResult = async (fromInput, toInput) => {
     }
   }
 
-  if (nearestStations && nearestStations.error) {
-    return {
-      from,
-      to,
-      route: null,
-      totals: null,
-      navigation: null,
-      nearestStations: null,
-      hasFareData: false,
-      hasNavigation: false,
-      error: nearestStations.error,
-    }
-  }
+  const safeNearestStations = (nearestStations && !nearestStations.error) ? nearestStations : null
 
   // Prefer parsed Google Directions transit steps.
   if (navigation && navigation.steps && navigation.steps.length) {
@@ -398,7 +409,7 @@ export const getRouteSearchResult = async (fromInput, toInput) => {
         route,
         totals: null,
         navigation,
-        nearestStations,
+        nearestStations: safeNearestStations,
         hasFareData: false,
         hasNavigation: true,
       }
@@ -411,9 +422,9 @@ export const getRouteSearchResult = async (fromInput, toInput) => {
     route: null,
     totals: null,
     navigation,
-    nearestStations,
+    nearestStations: safeNearestStations,
     hasFareData: false,
     hasNavigation: Boolean(navigation),
-    error: 'no_transit_route_found',
+    error: navigation ? null : 'no_transit_route_found',
   }
 }

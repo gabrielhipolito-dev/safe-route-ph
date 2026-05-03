@@ -427,6 +427,62 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                         </span>
                       )}
                     </div>
+                    {isActiveStep && !((step.mode || '').toLowerCase().includes('walk') || (step.instruction || '').toLowerCase().includes('walk')) && ((step.mode || '').toLowerCase().includes('train') || (step.mode || '').toLowerCase().includes('mrt') || (step.mode || '').toLowerCase().includes('lrt') || (step.mode || '').toLowerCase().includes('tram') || (step.mode || '').toLowerCase().includes('subway') || (step.instruction || '').toLowerCase().includes('train') || (step.instruction || '').toLowerCase().includes('lrt') || (step.instruction || '').toLowerCase().includes('mrt')) && (
+                      <div className="mt-2.5 rounded-xl bg-slate-800/40 p-2.5 border border-white/5 text-[11px] font-medium text-slate-300">
+                        {(() => {
+                          const lower = (step.instruction || '').toLowerCase()
+                          let line = 'LRT-2'
+                          let allStops = [
+                            'Recto', 'Legarda', 'Pureza', 'V. Mapa', 'J. Ruiz', 'Gilmore',
+                            'Betty Go-Belmonte', 'Araneta Center-Cubao', 'Anonas', 'Katipunan',
+                            'Santolan', 'Marikina-Pasig', 'Antipolo'
+                          ]
+
+                          if (lower.includes('lrt-1') || lower.includes('dr. santos') || lower.includes('baclaran') || lower.includes('roosevelt') || lower.includes('fpj')) {
+                            line = 'LRT-1'
+                            allStops = [
+                              'Baclaran', 'EDSA', 'Libertad', 'Gil Puyat', 'Vito Cruz', 'Quirino',
+                              'Pedro Gil', 'UN Avenue', 'Central Terminal', 'Carriedo',
+                              'Doroteo Jose', 'Bambang', 'Tayuman', 'Blumentritt', 'Abad Santos',
+                              'R. Papa', '5th Avenue', 'Monumento', 'Balintawak', 'Roosevelt (FPJ)',
+                              'Redemptorist', 'MIA', 'Asia World', 'Ninoy Aquino', 'Dr. Santos'
+                            ]
+                          } else if (lower.includes('mrt-3') || lower.includes('north avenue') || lower.includes('taft')) {
+                            line = 'MRT-3'
+                            allStops = [
+                              'North Avenue', 'Quezon Avenue', 'Kamuning', 'Araneta Center-Cubao',
+                              'Santolan-Anand', 'Ortigas', 'Shaw Boulevard', 'Boni', 'Guadalupe',
+                              'Buendia', 'Ayala', 'Magallanes', 'Taft Avenue'
+                            ]
+                          }
+
+                          let stations = []
+                          const fromIdx = step.departureStop ? allStops.findIndex(s => s.toLowerCase().includes(step.departureStop.toLowerCase()) || step.departureStop.toLowerCase().includes(s.toLowerCase())) : -1
+                          const toIdx = step.arrivalStop ? allStops.findIndex(s => s.toLowerCase().includes(step.arrivalStop.toLowerCase()) || step.arrivalStop.toLowerCase().includes(s.toLowerCase())) : -1
+
+                          if (fromIdx !== -1 && toIdx !== -1) {
+                            const start = Math.min(fromIdx, toIdx)
+                            const end = Math.max(fromIdx, toIdx)
+                            stations = allStops.slice(start, end + 1)
+                          } else {
+                            stations = allStops.slice(0, 5)
+                          }
+
+                          return (
+                            <>
+                              <p className="text-[10px] font-black uppercase tracking-wider text-emerald-300 mb-1">
+                                🚆 {line} Station Stops:
+                              </p>
+                              <ul className="grid gap-1 pl-3.5 list-disc text-slate-300 font-bold text-xs mt-1">
+                                {stations.map((st, sIdx) => (
+                                  <li key={sIdx}>{st}</li>
+                                ))}
+                              </ul>
+                            </>
+                          )
+                        })()}
+                      </div>
+                    )}
                   </div>
                 </button>
               )
