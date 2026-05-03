@@ -50,7 +50,7 @@ export default function CustomRoutePage() {
   const [newMode, setNewMode] = useState('Multi-leg')
   const [newRegular, setNewRegular] = useState('')
   const [newStudent, setNewStudent] = useState('')
-  
+
   const [itinerarySteps, setItinerarySteps] = useState([
     { description: '', fare: '', mode: 'Jeepney' }
   ])
@@ -203,11 +203,10 @@ export default function CustomRoutePage() {
               <button
                 key={mode}
                 onClick={() => setActiveFilter(mode)}
-                className={`rounded-full px-4 py-2 text-xs font-black uppercase tracking-wider transition-all duration-300 ${
-                  activeFilter === mode
+                className={`rounded-full px-4 py-2 text-xs font-black uppercase tracking-wider transition-all duration-300 ${activeFilter === mode
                     ? 'bg-emerald-500 text-slate-950 shadow-[0_0_15px_rgba(52,211,153,0.35)] active:scale-95'
                     : 'border border-white/10 bg-white/5 text-slate-300 hover:border-white/20 hover:bg-white/10'
-                }`}
+                  }`}
               >
                 {mode}
               </button>
@@ -241,11 +240,10 @@ export default function CustomRoutePage() {
                         <h2 className="text-base font-black text-white sm:text-lg uppercase tracking-tight leading-tight">
                           {row.route}
                         </h2>
-                        <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] shadow-sm ${
-                          row.status === 'Student Added'
+                        <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] shadow-sm ${row.status === 'Student Added'
                             ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
                             : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                        }`}>
+                          }`}>
                           {row.status}
                         </span>
                       </div>

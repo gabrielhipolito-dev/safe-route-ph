@@ -223,6 +223,11 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
       currentPos = nextPos
     }
 
+    // Safe fallback to prevent same start-and-end markers (world map bug)
+    if (stepOrigin === stepDest || !stepOrigin || !stepDest) {
+      return `https://www.google.com/maps/embed/v1/directions?key=${keyToUse}&origin=${encodeURIComponent(origin || 'Manila')}&destination=${encodeURIComponent(destination || 'Manila')}&mode=transit&waypoints=${encodeURIComponent(stepDest || 'Manila')}`
+    }
+
     return `https://www.google.com/maps/embed/v1/directions?key=${keyToUse}&origin=${encodeURIComponent(stepOrigin)}&destination=${encodeURIComponent(stepDest)}&mode=${mode}`
   }, [apiKey, origin, destination, activeRoute, activeStepIdx])
 
@@ -382,6 +387,16 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                       <span className="rounded-full bg-white/5 border border-white/10 px-2.5 py-0.5 text-[10px] font-black tracking-wider uppercase text-slate-300 shadow-sm">
                         {(step.mode || '').toLowerCase().includes('tram') ? 'LRT Train' : step.mode}
                       </span>
+                      {step.duration && (
+                        <span className="rounded-full bg-slate-800/80 border border-white/10 px-2.5 py-0.5 text-[10px] font-black tracking-wider uppercase text-slate-200 shadow-sm">
+                          ⏱ {step.duration}
+                        </span>
+                      )}
+                      {step.distance && (
+                        <span className="rounded-full bg-slate-800/80 border border-white/10 px-2.5 py-0.5 text-[10px] font-black tracking-wider uppercase text-slate-200 shadow-sm">
+                          📏 {step.distance}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </button>
