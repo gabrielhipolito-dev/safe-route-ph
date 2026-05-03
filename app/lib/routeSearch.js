@@ -101,7 +101,8 @@ const mapGoogleNavigation = (payload) => {
   const deduplicatedRoutes = []
 
   for (const route of allRoutes) {
-    const signature = `${route.summary}_${route.distance}_${route.duration}_${route.calculatedRegularFare}`
+    const stepInstructions = route.steps.map(s => s.instruction).join('|')
+    const signature = `${route.distance}_${stepInstructions}`
     if (!seenSignatures.has(signature)) {
       seenSignatures.add(signature)
       deduplicatedRoutes.push(route)
