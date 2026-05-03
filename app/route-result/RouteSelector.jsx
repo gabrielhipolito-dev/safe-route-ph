@@ -458,8 +458,25 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                           }
 
                           let stations = []
-                          const fromIdx = step.departureStop ? allStops.findIndex(s => s.toLowerCase().includes(step.departureStop.toLowerCase()) || step.departureStop.toLowerCase().includes(s.toLowerCase())) : -1
-                          const toIdx = step.arrivalStop ? allStops.findIndex(s => s.toLowerCase().includes(step.arrivalStop.toLowerCase()) || step.arrivalStop.toLowerCase().includes(s.toLowerCase())) : -1
+                          let fromIdx = step.departureStop ? allStops.findIndex(s => s.toLowerCase().includes(step.departureStop.toLowerCase()) || step.departureStop.toLowerCase().includes(s.toLowerCase())) : -1
+                          let toIdx = step.arrivalStop ? allStops.findIndex(s => s.toLowerCase().includes(step.arrivalStop.toLowerCase()) || step.arrivalStop.toLowerCase().includes(s.toLowerCase())) : -1
+                          if (fromIdx === -1 || toIdx === -1) {
+                            allStops.forEach((s, idx) => {
+                              if (lower.includes(s.toLowerCase())) {
+                                if (fromIdx === -1) fromIdx = idx
+                                else toIdx = idx
+                              }
+                            })
+
+                            if (fromIdx === -1 && index > 0) {
+                              const prevLower = (activeRoute.steps[index - 1]?.instruction || '').toLowerCase()
+                              allStops.forEach((s, idx) => {
+                                if (prevLower.includes(s.toLowerCase())) {
+                                  fromIdx = idx
+                                }
+                              })
+                            }
+                          }
 
                           if (fromIdx !== -1 && toIdx !== -1) {
                             const start = Math.min(fromIdx, toIdx)
