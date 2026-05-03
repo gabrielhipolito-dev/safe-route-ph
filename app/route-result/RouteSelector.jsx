@@ -432,34 +432,52 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                       <div className="mt-2.5 rounded-xl bg-slate-800/40 p-2.5 border border-white/5 text-[11px] font-medium text-slate-300">
                         {(() => {
                           const lower = (step.instruction || '').toLowerCase()
-                          let line = 'LRT-2'
-                          let allStops = [
-                            'Recto', 'Legarda', 'Pureza', 'V. Mapa', 'J. Ruiz', 'Gilmore',
-                            'Betty Go-Belmonte', 'Araneta Center-Cubao', 'Anonas', 'Katipunan',
-                            'Santolan', 'Marikina-Pasig', 'Antipolo'
+                          const linesConfig = [
+                            {
+                              name: 'LRT-1',
+                              keywords: ['lrt-1', 'dr santos', 'baclaran', 'roosevelt', 'fpj'],
+                              stops: [
+                                'Baclaran', 'EDSA', 'Libertad', 'Gil Puyat', 'Vito Cruz', 'Quirino',
+                                'Pedro Gil', 'UN Avenue', 'Central Terminal', 'Carriedo',
+                                'Doroteo Jose', 'Bambang', 'Tayuman', 'Blumentritt', 'Abad Santos',
+                                'R. Papa', '5th Avenue', 'Monumento', 'Balintawak', 'Roosevelt (FPJ)',
+                                'Redemptorist', 'MIA', 'Asia World', 'Ninoy Aquino', 'Dr. Santos'
+                              ]
+                            },
+                            {
+                              name: 'LRT-2',
+                              keywords: ['lrt-2', 'recto', 'antipolo'],
+                              stops: [
+                                'Recto', 'Legarda', 'Pureza', 'V. Mapa', 'J. Ruiz', 'Gilmore',
+                                'Betty Go-Belmonte', 'Araneta Center-Cubao', 'Anonas', 'Katipunan',
+                                'Santolan', 'Marikina-Pasig', 'Antipolo'
+                              ]
+                            },
+                            {
+                              name: 'MRT-3',
+                              keywords: ['mrt-3', 'north avenue', 'taft'],
+                              stops: [
+                                'North Avenue', 'Quezon Avenue', 'Kamuning', 'Araneta Center-Cubao',
+                                'Santolan-Anand', 'Ortigas', 'Shaw Boulevard', 'Boni', 'Guadalupe',
+                                'Buendia', 'Ayala', 'Magallanes', 'Taft Avenue'
+                              ]
+                            }
                           ]
 
-                          if (lower.includes('lrt-1') || lower.includes('dr. santos') || lower.includes('baclaran') || lower.includes('roosevelt') || lower.includes('fpj')) {
-                            line = 'LRT-1'
-                            allStops = [
-                              'Baclaran', 'EDSA', 'Libertad', 'Gil Puyat', 'Vito Cruz', 'Quirino',
-                              'Pedro Gil', 'UN Avenue', 'Central Terminal', 'Carriedo',
-                              'Doroteo Jose', 'Bambang', 'Tayuman', 'Blumentritt', 'Abad Santos',
-                              'R. Papa', '5th Avenue', 'Monumento', 'Balintawak', 'Roosevelt (FPJ)',
-                              'Redemptorist', 'MIA', 'Asia World', 'Ninoy Aquino', 'Dr. Santos'
-                            ]
-                          } else if (lower.includes('mrt-3') || lower.includes('north avenue') || lower.includes('taft')) {
-                            line = 'MRT-3'
-                            allStops = [
-                              'North Avenue', 'Quezon Avenue', 'Kamuning', 'Araneta Center-Cubao',
-                              'Santolan-Anand', 'Ortigas', 'Shaw Boulevard', 'Boni', 'Guadalupe',
-                              'Buendia', 'Ayala', 'Magallanes', 'Taft Avenue'
-                            ]
-                          }
+                          const activeLine = linesConfig.find(l =>
+                            lower.includes(l.name.toLowerCase()) ||
+                            l.keywords.some(k => lower.includes(k)) ||
+                            l.stops.some(s => lower.includes(s.toLowerCase())) ||
+                            (index > 0 && (activeRoute.steps[index - 1]?.instruction || '').toLowerCase().includes(l.name.toLowerCase()))
+                          ) || linesConfig[1]
+
+                          const line = activeLine.name
+                          const allStops = activeLine.stops
 
                           let stations = []
                           let fromIdx = step.departureStop ? allStops.findIndex(s => s.toLowerCase().includes(step.departureStop.toLowerCase()) || step.departureStop.toLowerCase().includes(s.toLowerCase())) : -1
                           let toIdx = step.arrivalStop ? allStops.findIndex(s => s.toLowerCase().includes(step.arrivalStop.toLowerCase()) || step.arrivalStop.toLowerCase().includes(s.toLowerCase())) : -1
+
                           if (fromIdx === -1 || toIdx === -1) {
                             allStops.forEach((s, idx) => {
                               if (lower.includes(s.toLowerCase())) {
