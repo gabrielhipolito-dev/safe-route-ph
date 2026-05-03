@@ -500,6 +500,9 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                             const start = Math.min(fromIdx, toIdx)
                             const end = Math.max(fromIdx, toIdx)
                             stations = allStops.slice(start, end + 1)
+                            if (fromIdx > toIdx) {
+                              stations.reverse()
+                            }
                           } else {
                             stations = allStops.slice(0, 5)
                           }
