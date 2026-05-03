@@ -186,6 +186,20 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
     const keyToUse = apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
     if (!keyToUse) return ''
 
+    const activeStep = activeRoute?.steps?.[activeStepIdx]
+    if (activeStep && activeStep.startLocation && activeStep.endLocation) {
+      const sLat = activeStep.startLocation.lat
+      const sLng = activeStep.startLocation.lng
+      const dLat = activeStep.endLocation.lat
+      const dLng = activeStep.endLocation.lng
+      const isWalk = (activeStep.mode || '').toLowerCase().includes('walk')
+      const m = isWalk ? 'walking' : 'transit'
+
+      if (sLat !== dLat || sLng !== dLng) {
+        return `https://www.google.com/maps/embed/v1/directions?key=${keyToUse}&origin=${sLat},${sLng}&destination=${dLat},${dLng}&mode=${m}`
+      }
+    }
+
     let currentPos = origin || 'Manila, Philippines'
     let stepOrigin = currentPos
     let stepDest = destination || 'Manila, Philippines'

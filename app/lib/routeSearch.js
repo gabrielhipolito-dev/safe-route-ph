@@ -66,6 +66,8 @@ const mapGoogleNavigation = (payload) => {
       departureStop: step.transit_details?.departure_stop?.name || null,
       arrivalStop: step.transit_details?.arrival_stop?.name || null,
       line: step.transit_details?.line?.short_name || step.transit_details?.line?.name || null,
+      startLocation: step.start_location || null,
+      endLocation: step.end_location || null,
     }))
 
     let calculatedRegularFare = 0
