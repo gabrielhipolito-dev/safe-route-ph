@@ -20,23 +20,34 @@ const formatArrivalTime = (durationText = '') => {
   return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
 }
 
+const getStepDistanceKm = (step) => {
+  if (!step || !step.distance) return 1
+  const clean = step.distance.toLowerCase().trim()
+  if (clean.includes('km')) {
+    return parseFloat(clean.replace(/[^\d.]/g, '')) || 1
+  }
+  if (clean.includes('m')) {
+    return (parseFloat(clean.replace(/[^\d.]/g, '')) || 100) / 1000
+  }
+  return 1
+}
+
 const getStepFare = (step) => {
-  // Use real data: If the scraper/Google API already provides a real step-specific fare, use it first
   if (step && step.fare) return step.fare
   if (step && step.fareText) return step.fareText
 
-  // Fallback: If the API returns steps without individual fares, use local official base rate data:
   if (!step || !step.mode) return '₱0'
 
   const mode = step.mode.toLowerCase()
   const instruction = (step.instruction || '').toLowerCase()
   const durationText = (step.duration || '').toLowerCase()
+  const distanceKm = getStepDistanceKm(step)
 
   if (mode.includes('walk')) {
     return '₱0 (Free)'
   }
 
-  // Check for hours or days in the duration text
+  // Handle multi-hour provincial long haul trips
   const daysMatch = durationText.match(/(\d+)\s*day/i)
   const hoursMatch = durationText.match(/(\d+)\s*hr/i) || durationText.match(/(\d+)\s*hour/i)
 
@@ -46,30 +57,45 @@ const getStepFare = (step) => {
     const totalHours = (days * 24) + hours
 
     if (mode.includes('bus') || instruction.includes('bus')) {
-      // Long haul provincial bus trip (e.g., ~₱180 per hour of travel)
       return `₱${totalHours * 180 + 150}`
     }
     if (mode.includes('train') || instruction.includes('lrt') || instruction.includes('mrt')) {
-      // Long distance train or express
       return `₱${totalHours * 120 + 80}`
     }
     return `₱${totalHours * 150}`
   }
 
-  // Short distance / local commute
+  // Official May 2026 LRTA / LTFRB Rates
+
+  // 1. Train Commute
   if (mode.includes('train') || mode.includes('tram') || mode.includes('subway') || instruction.includes('lrt') || instruction.includes('mrt')) {
-    return '₱15 - ₱35'
+    const base = 15
+    const perKm = 1.21
+    const total = base + distanceKm * perKm
+    return `₱${Math.ceil(total)}`
   }
 
+  // 2. Bus Commute
   if (mode.includes('bus') || instruction.includes('bus')) {
-    return '₱15 - ₱45'
+    const isAircon = instruction.includes('aircon') || instruction.includes('air-conditioned')
+    const base = isAircon ? 18 : 15
+    const perKm = isAircon ? 2.98 : 2.49
+    const minDistance = 5
+    const total = base + Math.max(0, distanceKm - minDistance) * perKm
+    return `₱${Math.ceil(total)}`
   }
 
-  if (mode.includes('jeep') || instruction.includes('jeepney') || instruction.includes('tricycle')) {
-    return '₱13'
+  // 3. Jeepney / Tricycle Commute
+  if (mode.includes('jeep') || mode.includes('tricycle') || instruction.includes('jeepney') || instruction.includes('tricycle')) {
+    const isModern = mode.includes('modern') || instruction.includes('modern')
+    const base = isModern ? 17 : 14
+    const perKm = isModern ? 2.40 : 2.00
+    const minDistance = 4
+    const total = base + Math.max(0, distanceKm - minDistance) * perKm
+    return `₱${Math.ceil(total)}`
   }
 
-  return '₱15'
+  return `₱${Math.ceil(14 + Math.max(0, distanceKm - 4) * 2)}`
 }
 
 const getTrainIntermediateStations = (departure, arrival) => {
@@ -142,7 +168,6 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
     if (!allRoutes || !allRoutes.length) return []
     const seen = new Set()
     return allRoutes.filter((route) => {
-      // deduplicate strictly by duration, distance, and the first step instruction
       const firstStepInst = route.steps?.[0]?.instruction || ''
       const key = `${route.duration || ''}_${route.distance || ''}_${firstStepInst}`.toLowerCase().replace(/\s+/g, '')
       if (seen.has(key)) return false
@@ -161,10 +186,10 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
     let waypoint = ''
     if (activeRoute && activeRoute.steps && activeRoute.steps.length > 0) {
       const transitStep = activeRoute.steps.find(
-        s => (s.mode || '').toLowerCase().includes('transit') || (s.mode || '').toLowerCase().includes('train') || s.arrivalStop
+        s => (s.mode || '').toLowerCase().includes('transit') || (s.mode || '').toLowerCase().includes('train') || s.departureStop
       )
-      if (transitStep && transitStep.arrivalStop) {
-        waypoint = transitStep.arrivalStop
+      if (transitStep && transitStep.departureStop) {
+        waypoint = transitStep.departureStop
       }
     }
 
@@ -177,7 +202,6 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header Hero Section with Rich Aesthetics - Now dynamic based on selected route option */}
       <div className="mb-2 rounded-[32px] border border-white/10 bg-slate-900/60 p-6 text-white shadow-2xl backdrop-blur-xl sm:p-10 hover:border-white/20 transition-all duration-300 w-full">
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
           <div className="max-w-3xl">
@@ -220,7 +244,7 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
             {activeRoute.steps?.length || 0} Primary Steps
           </span>
           <span className="rounded-full bg-white/5 hover:bg-white/10 border border-white/10 px-3.5 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-emerald-300 transition-colors shadow-[0_0_10px_rgba(52,211,153,0.15)]">
-            Updated May 3, 2026
+            Updated May 4, 2026
           </span>
         </div>
       </div>
@@ -407,7 +431,6 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
 
         {/* 3. Compact Action & Sidebar Context */}
         <aside className="lg:col-span-1 grid gap-5 content-start max-h-[720px] overflow-y-auto pr-1">
-          {/* Swapped Fare Section Here - Reduces bloat and puts fees upfront */}
           <div className="rounded-[28px] border border-white/10 bg-white/5 p-4 sm:p-5 shadow-2xl backdrop-blur-md flex flex-col gap-3 hover:-translate-y-1 transition duration-300">
             <div className="flex flex-wrap justify-between items-center gap-2">
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 py-1 text-[10px] font-black uppercase tracking-wider">
