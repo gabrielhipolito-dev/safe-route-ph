@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation'
 const navItems = [
   { href: '/', label: 'Home' },
   { href: '/safety', label: 'Safety Reports' },
-  { href: '/fares', label: 'Fare Calculator' },
+  { href: '/custom-route', label: 'Route Planner' },
   { href: '/last-trip', label: 'Last Trip' },
   { href: '/first-timer', label: 'First Timer' },
 ]
