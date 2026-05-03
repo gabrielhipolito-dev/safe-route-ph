@@ -267,11 +267,13 @@ const getGoogleNavigation = async (from, to) => {
 const normalizeLocationName = (name = '') => {
   const clean = name.trim().toLowerCase().replace(/[.,]/g, '')
   const schoolAbbr = {
+    'adsamson': 'Adamson University, Manila',
+    'up d': 'University of the Philippines Diliman',
+    'upd': 'University of the Philippines Diliman',
     'ust': 'University of Santo Tomas, Manila',
     'adamson': 'Adamson University, Manila',
     'adu': 'Adamson University, Manila',
     'up': 'University of the Philippines Diliman',
-    'upd': 'University of the Philippines Diliman',
     'up diliman': 'University of the Philippines Diliman',
     'dlsu': 'De La Salle University, Manila',
     'feu': 'Far Eastern University, Manila',
@@ -295,12 +297,13 @@ const normalizeLocationName = (name = '') => {
   }
 
   for (const [abbr, full] of Object.entries(schoolAbbr)) {
-    if (clean === abbr || clean.includes(` ${abbr} `) || clean.startsWith(`${abbr} `) || clean.endsWith(` ${abbr}`)) {
+    if (clean === abbr || clean.includes(abbr) || abbr.includes(clean)) {
       return full
     }
   }
   return name
 }
+
 
 export const getRouteSearchResult = async (fromInput, toInput) => {
   const from = normalizeLocationName(fromInput)

@@ -6,10 +6,11 @@ const initialFareRows = [
   {
     route: 'Adamson University → UP Diliman',
     mode: 'LRT-1 → LRT-2 → jeep route',
-    regular: '₱25.50–₱55.00',
-    student: '₱22.50–₱49.50',
+    regular: '₱55.00',
+    student: '₱44.00',
     updated: 'Apr 30, 2026',
     status: 'Student verified',
+    likes: 24,
     breakdown: [
       'Adamson → closest LRT-1 access point: ₱13–20',
       'LRT-1 to Recto, transfer to LRT-2, then Katipunan: rail fare matrix',
@@ -19,19 +20,21 @@ const initialFareRows = [
   {
     route: 'UST → SM Manila',
     mode: 'Jeepney + walk',
-    regular: '₱13.00',
-    student: '₱10.50',
+    regular: '₱14.00',
+    student: '₱11.20',
     updated: 'Apr 28, 2026',
     status: 'Recently changed',
+    likes: 18,
     breakdown: ['Direct jeepney fare: ₱13.00', 'Student discounted fare: ₱10.50'],
   },
   {
     route: 'DLSU → Lawton Terminal',
     mode: 'Jeepney / bus transfer',
-    regular: '₱15.00–₱25.00',
-    student: '₱12.00–₱20.00',
+    regular: '₱25.00',
+    student: '₱20.00',
     updated: 'Apr 26, 2026',
     status: 'Stable',
+    likes: 12,
     breakdown: ['Main leg fare: ₱15.00–₱25.00', 'Discounted range based on operator'],
   },
 ]
@@ -105,6 +108,7 @@ export default function CustomRoutePage() {
       student: newStudent.startsWith('₱') ? newStudent : `₱${newStudent}`,
       updated: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       status: 'Student Added',
+      likes: 0,
       breakdown: parsedBreakdown.length > 0 ? parsedBreakdown : ['Direct transport fare'],
     }
 
@@ -117,6 +121,17 @@ export default function CustomRoutePage() {
     setNewStudent('')
     setNewMode('Multi-leg')
     setItinerarySteps([{ description: '', fare: '', mode: 'Jeepney' }])
+  }
+
+  const handleLikeRoute = (routeTitle) => {
+    const nextCustom = customRoutes.map(r => {
+      if (r.route === routeTitle) {
+        return { ...r, likes: (r.likes || 0) + 1 }
+      }
+      return r
+    })
+    setCustomRoutes(nextCustom)
+    saveCustomRoutes(nextCustom)
   }
 
   const handleDeleteCustomRoute = (routeTitle) => {
@@ -216,7 +231,7 @@ export default function CustomRoutePage() {
                   <p className="text-xs text-slate-500 mt-1 font-medium">Use the form to the right to add your custom student itinerary.</p>
                 </div>
               ) : (
-                filteredFareRows.map((row, index) => (
+                filteredFareRows.map((row) => (
                   <article
                     key={row.route}
                     className="grid gap-4 px-5 py-5 md:grid-cols-[1.8fr_1fr_1fr_1fr] md:items-center hover:bg-white/5 transition-all duration-200"
@@ -260,16 +275,32 @@ export default function CustomRoutePage() {
 
                     <div className="flex flex-wrap items-center gap-2 md:justify-start">
                       {row.status === 'Student Added' ? (
-                        <button
-                          onClick={() => handleDeleteCustomRoute(row.route)}
-                          className="rounded-xl bg-red-500/15 border border-red-500/25 hover:bg-red-500/30 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-red-300 transition cursor-pointer select-none"
-                        >
-                          Delete ✖
-                        </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            onClick={() => handleDeleteCustomRoute(row.route)}
+                            className="rounded-xl bg-red-500/15 border border-red-500/25 hover:bg-red-500/30 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-red-300 transition cursor-pointer select-none"
+                          >
+                            Delete ✖
+                          </button>
+                          <button
+                            onClick={() => handleLikeRoute(row.route)}
+                            className="rounded-xl bg-emerald-500/15 border border-emerald-500/25 hover:bg-emerald-500/30 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-300 transition cursor-pointer select-none"
+                          >
+                            ▲ Upvote ({row.likes || 0})
+                          </button>
+                        </div>
                       ) : (
-                        <span className="rounded-xl bg-white/5 border border-white/10 px-3 py-1.5 text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                          Verified
-                        </span>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="rounded-xl bg-white/5 border border-white/10 px-3 py-1.5 text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                            Verified
+                          </span>
+                          <button
+                            onClick={() => handleLikeRoute(row.route)}
+                            className="rounded-xl bg-emerald-500/15 border border-emerald-500/25 hover:bg-emerald-500/30 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-300 transition cursor-pointer select-none"
+                          >
+                            ▲ Upvote ({row.likes || 0})
+                          </button>
+                        </div>
                       )}
                     </div>
                   </article>

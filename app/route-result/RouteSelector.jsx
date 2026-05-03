@@ -161,181 +161,70 @@ const getTrainIntermediateStations = (departure, arrival) => {
 
 export default function RouteSelector({ allRoutes, origin, destination, apiKey, nearestStations }) {
   const [activeIdx, setActiveIdx] = useState(0)
+  const [activeStepIdx, setActiveStepIdx] = useState(0)
   const [isEnlarged, setIsEnlarged] = useState(false)
-  const [mapMode, setMapMode] = useState('transit')
-
-  // Manage custom-created routes state
-  const [customAddedRoutes, setCustomAddedRoutes] = useState([])
-  const [routeLikes, setRouteLikes] = useState({})
-  const [showForm, setShowForm] = useState(false)
-
-  // Builder Form state
-  const [newRouteName, setNewRouteName] = useState('')
-  const [newDuration, setNewDuration] = useState('')
-  const [newDistance, setNewDistance] = useState('')
-  const [customSteps, setCustomSteps] = useState([
-    { instruction: '', mode: 'Jeepney', duration: '', distance: '', fare: '', commuterType: 'Student' }
-  ])
-
-  // Load custom routes and likes from localStorage
-  useEffect(() => {
-    try {
-      const storedRoutes = localStorage.getItem('custom_added_commute_routes')
-      if (storedRoutes) {
-        setCustomAddedRoutes(JSON.parse(storedRoutes))
-      }
-      const storedLikes = localStorage.getItem('custom_route_upvotes')
-      if (storedLikes) {
-        setRouteLikes(JSON.parse(storedLikes))
-      }
-    } catch (err) {
-      console.error('Failed to load locally saved state:', err)
-    }
-  }, [])
 
   const uniqueRoutes = useMemo(() => {
-    const raw = [...customAddedRoutes, ...(allRoutes || [])]
+    if (!allRoutes || !allRoutes.length) return []
     const seen = new Set()
-    return raw.filter((route) => {
+    return allRoutes.filter((route) => {
       const firstStepInst = route.steps?.[0]?.instruction || ''
       const key = `${route.duration || ''}_${route.distance || ''}_${firstStepInst}`.toLowerCase().replace(/\s+/g, '')
       if (seen.has(key)) return false
       seen.add(key)
       return true
     })
-  }, [allRoutes, customAddedRoutes])
+  }, [allRoutes])
 
   const activeRoute = uniqueRoutes[activeIdx] || uniqueRoutes[0]
+
+  useEffect(() => {
+    setActiveStepIdx(0)
+  }, [activeIdx])
 
   const iframeSrc = useMemo(() => {
     const keyToUse = apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
     if (!keyToUse) return ''
 
-    let orig = origin || ''
-    let dest = destination || ''
+    let currentPos = origin || 'Manila, Philippines'
+    let stepOrigin = currentPos
+    let stepDest = destination || 'Manila, Philippines'
+    let mode = 'transit'
 
-    if ((!orig || !dest) && activeRoute?.summary) {
-      const parts = activeRoute.summary.split(/→|to/i)
-      if (parts.length >= 2) {
-        orig = parts[0].trim()
-        dest = parts[1].trim()
-      } else {
-        orig = 'Manila, Philippines'
-        dest = activeRoute.summary
+    const steps = activeRoute?.steps || []
+    for (let i = 0; i <= activeStepIdx; i++) {
+      const step = steps[i]
+      if (!step) continue
+
+      const instr = (step.instruction || '').toLowerCase()
+      let nextPos = currentPos
+      const toMatch = step.instruction.match(/to\s+([^,.\n(]+)/i)
+
+      if (step.arrivalStop) {
+        nextPos = step.arrivalStop
+      } else if (toMatch && toMatch[1]) {
+        nextPos = toMatch[1].trim()
+      } else if (step.departureStop) {
+        nextPos = step.departureStop
       }
-    }
 
-    if (!orig || !dest) {
-      orig = 'Manila, Philippines'
-      dest = 'University of Santo Tomas, Manila'
-    }
+      if (i === activeStepIdx) {
+        stepOrigin = currentPos
+        const isWalk = (step.mode || '').toLowerCase().includes('walk') || instr.includes('walk')
+        mode = isWalk ? 'walking' : 'transit'
 
-    let waypoint = ''
-    if (activeRoute && activeRoute.steps && activeRoute.steps.length > 0) {
-      const transitStep = activeRoute.steps.find(
-        s => (s.mode || '').toLowerCase().includes('transit') || (s.mode || '').toLowerCase().includes('train') || s.departureStop
-      )
-      if (transitStep && transitStep.departureStop) {
-        waypoint = transitStep.departureStop
-      }
-    }
-
-    let src = `https://www.google.com/maps/embed/v1/directions?key=${keyToUse}&origin=${encodeURIComponent(orig)}&destination=${encodeURIComponent(dest)}&mode=${mapMode}`
-    if (waypoint && mapMode === 'transit') {
-      src += `&waypoints=${encodeURIComponent(waypoint)}`
-    }
-    return src
-  }, [apiKey, origin, destination, activeRoute, mapMode])
-
-  const handleAddStepInput = () => {
-    setCustomSteps([
-      ...customSteps,
-      { instruction: '', mode: 'Jeepney', duration: '', distance: '', fare: '', commuterType: 'Student' }
-    ])
-  }
-
-  const handleRemoveStepInput = (idx) => {
-    setCustomSteps(customSteps.filter((_, i) => i !== idx))
-  }
-
-  const updateStepInput = (idx, field, value) => {
-    const nextSteps = customSteps.map((s, i) => {
-      if (i === idx) return { ...s, [field]: value }
-      return s
-    })
-    setCustomSteps(nextSteps)
-  }
-
-  const handleCreateRoute = (e) => {
-    e.preventDefault()
-    if (!newRouteName || !newDuration) return
-
-    let totalReg = 0
-    let totalStud = 0
-
-    const parsedSteps = customSteps
-      .filter(s => s.instruction.trim() !== '')
-      .map(s => {
-        const fareVal = parseFloat((s.fare || '').replace(/[^\d.]/g, '')) || 0
-        let stepReg = fareVal
-        let stepStud = fareVal
-
-        if (s.commuterType === 'Student') {
-          stepStud = fareVal
-          stepReg = Math.ceil(fareVal / 0.8)
+        if (step.departureStop && step.arrivalStop) {
+          stepOrigin = step.departureStop
+          stepDest = step.arrivalStop
         } else {
-          stepReg = fareVal
-          stepStud = Math.ceil(fareVal * 0.8)
+          stepDest = nextPos
         }
-
-        totalReg += stepReg
-        totalStud += stepStud
-
-        return {
-          instruction: s.instruction,
-          mode: s.mode,
-          duration: s.duration || 'N/A',
-          distance: s.distance || 'N/A',
-          commuterType: s.commuterType || 'Student',
-          fare: `₱${stepReg}`
-        }
-      })
-
-    const nextCustom = {
-      summary: newRouteName,
-      duration: newDuration,
-      distance: newDistance || 'N/A',
-      steps: parsedSteps,
-      calculatedRegularFare: totalReg,
-      calculatedStudentFare: totalStud,
-      isCustom: true
+      }
+      currentPos = nextPos
     }
 
-    const updated = [nextCustom, ...customAddedRoutes]
-    setCustomAddedRoutes(updated)
-    try {
-      localStorage.setItem('custom_added_commute_routes', JSON.stringify(updated))
-    } catch (err) {
-      console.error(err)
-    }
-
-    setNewRouteName('')
-    setNewDuration('')
-    setNewDistance('')
-    setCustomSteps([{ instruction: '', mode: 'Jeepney', duration: '', distance: '', fare: '', commuterType: 'Student' }])
-    setActiveIdx(0)
-    setShowForm(false)
-  }
-
-  const handleLikeRoute = (rTitle) => {
-    const nextLikes = { ...routeLikes, [rTitle]: (routeLikes[rTitle] || 0) + 1 }
-    setRouteLikes(nextLikes)
-    try {
-      localStorage.setItem('custom_route_upvotes', JSON.stringify(nextLikes))
-    } catch (err) {
-      console.error(err)
-    }
-  }
+    return `https://www.google.com/maps/embed/v1/directions?key=${keyToUse}&origin=${encodeURIComponent(stepOrigin)}&destination=${encodeURIComponent(stepDest)}&mode=${mode}`
+  }, [apiKey, origin, destination, activeRoute, activeStepIdx])
 
   if (!uniqueRoutes || uniqueRoutes.length === 0) return null
 
@@ -352,11 +241,11 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
               {origin && destination ? (
                 <span className="flex flex-wrap items-center gap-2 sm:gap-3">
                   <span className="text-emerald-300">
-                    {/^-?\d+\.\d+,-?\d+\.\d+$/.test((origin || '').trim()) ? '📍 Current Location' : origin}
+                    {origin}
                   </span>
                   <span className="text-slate-500">→</span>
                   <span className="text-emerald-100">
-                    {/^-?\d+\.\d+,-?\d+\.\d+$/.test((destination || '').trim()) ? '📍 Current Location' : destination}
+                    {destination}
                   </span>
                 </span>
               ) : (
@@ -374,50 +263,29 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
             <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-[0.1em]">{activeRoute.distance || 'N/A'}</p>
           </div>
         </div>
-
-        <div className="mt-6 flex flex-wrap gap-2 border-t border-white/10 pt-5">
-          <span className="rounded-full bg-white/5 hover:bg-white/10 border border-white/10 px-3.5 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-emerald-300 transition-colors shadow-[0_0_10px_rgba(52,211,153,0.15)]">
-            {uniqueRoutes.length} Transit Options Available
-          </span>
-          <span className="rounded-full bg-white/5 hover:bg-white/10 border border-white/10 px-3.5 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-emerald-300 transition-colors shadow-[0_0_10px_rgba(52,211,153,0.15)]">
-            May 4, 2026 Reference
-          </span>
-        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-4 items-start text-slate-100">
-        {/* 1. Route List Pane */}
         <div className="lg:col-span-1 flex flex-col gap-3 max-h-[720px] overflow-y-auto pr-1">
-          <div className="flex justify-between items-center px-1">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 pl-1">
-              Commute Itineraries
-            </p>
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="text-[10px] font-black uppercase tracking-wider text-emerald-300 hover:text-emerald-400 select-none cursor-pointer flex items-center gap-1 bg-white/5 border border-white/10 px-2.5 py-1 rounded-xl transition hover:bg-white/10 active:scale-95"
-            >
-              {showForm ? 'View Active Route' : '+ Add Custom Route'}
-            </button>
-          </div>
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 pl-1">
+            Commute Itineraries
+          </p>
 
           {uniqueRoutes.map((routeOpt, rIndex) => (
             <button
               key={rIndex}
-              onClick={() => {
-                setActiveIdx(rIndex)
-                setShowForm(false)
-              }}
-              className={`flex flex-col gap-2 p-4 rounded-[24px] transition-all duration-300 text-left border hover:-translate-y-1 ${activeIdx === rIndex && !showForm
+              onClick={() => setActiveIdx(rIndex)}
+              className={`flex flex-col gap-2 p-4 rounded-[24px] transition-all duration-300 text-left border hover:-translate-y-1 ${activeIdx === rIndex
                   ? 'bg-emerald-500/10 border-emerald-400 text-white shadow-[0_0_25px_rgba(52,211,153,0.25)] font-black'
                   : 'bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10 text-slate-300 font-medium'
                 }`}
             >
               <div className="flex items-center justify-between gap-2 w-full">
-                <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] border ${activeIdx === rIndex && !showForm ? 'bg-emerald-500 border-emerald-500 text-slate-950 shadow-[0_0_12px_rgba(52,211,153,0.3)]' : 'bg-white/5 border-white/10 text-slate-400'
+                <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] border ${activeIdx === rIndex ? 'bg-emerald-500 border-emerald-500 text-slate-950 shadow-[0_0_12px_rgba(52,211,153,0.3)]' : 'bg-white/5 border-white/10 text-slate-400'
                   }`}>
-                  Option {rIndex + 1} {routeOpt.isCustom && '• Student Custom'}
+                  Option {rIndex + 1}
                 </span>
-                <span className={`text-sm font-black tracking-tight uppercase ${activeIdx === rIndex && !showForm ? 'text-white' : 'text-slate-300'}`}>
+                <span className="text-sm font-black tracking-tight uppercase">
                   {routeOpt.duration || 'N/A'}
                 </span>
               </div>
@@ -425,10 +293,10 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                 {routeOpt.summary || `Alternative Option ${rIndex + 1}`}
               </span>
               <div className="flex flex-wrap justify-between items-center gap-1.5 w-full mt-1 border-t border-white/10 pt-2">
-                <span className={`text-xs font-bold uppercase tracking-wide ${activeIdx === rIndex && !showForm ? 'text-emerald-300' : 'text-slate-500'}`}>
+                <span className={`text-xs font-bold uppercase tracking-wide ${activeIdx === rIndex ? 'text-emerald-300' : 'text-slate-500'}`}>
                   {routeOpt.distance || 'N/A'}
                 </span>
-                <span className={`text-xs font-black uppercase tracking-wide ${activeIdx === rIndex && !showForm ? 'text-emerald-400' : 'text-emerald-500'}`}>
+                <span className="text-xs font-black uppercase tracking-wide text-emerald-400">
                   {routeOpt.totalFareText || `₱${routeOpt.calculatedRegularFare || 0} reg`}
                 </span>
               </div>
@@ -436,309 +304,92 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
           ))}
         </div>
 
-        {/* 2. Form vs Viewing Container */}
-        {showForm ? (
-          <aside className="lg:col-span-2 rounded-[32px] border border-white/20 bg-slate-900/70 p-5 sm:p-6 shadow-2xl backdrop-blur-md flex flex-col gap-4 hover:border-white/30 transition duration-300 max-h-[720px] overflow-y-auto">
-            <div>
-              <span className="rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-400">
-                Custom Route Builder
+        <article className="lg:col-span-2 rounded-[32px] border border-white/10 bg-white/5 p-5 sm:p-6 shadow-2xl backdrop-blur-md transition-all duration-300 max-h-[720px] overflow-y-auto flex flex-col gap-5">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
+            <div className="space-y-1">
+              <span className="rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.15)]">
+                Option {activeIdx + 1} Detail View
               </span>
-              <h3 className="text-lg font-black text-white mt-1.5 uppercase tracking-tight">
-                Add Custom Transit Option
-              </h3>
-              <p className="text-xs text-slate-400 font-medium mt-0.5 leading-relaxed">
-                Add your custom itineraries here! Total Regular and Student fares will be automatically calculated based on step fares.
-              </p>
+              <h2 className="text-xl font-black text-white tracking-tight uppercase mt-1 leading-tight">
+                {activeRoute.summary || `Alternative Option ${activeIdx + 1}`}
+              </h2>
             </div>
 
-            <form onSubmit={handleCreateRoute} className="flex flex-col gap-4">
-              <label className="flex flex-col gap-1.5">
-                <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 pl-1">
-                  Route Name / Summary
-                </span>
-                <input
-                  type="text"
-                  placeholder="e.g., LRT1 to Jeep Transfer to FEU"
-                  required
-                  value={newRouteName}
-                  onChange={(e) => setNewRouteName(e.target.value)}
-                  className="rounded-xl border border-white/10 bg-white/5 px-3.5 py-2 text-sm text-white font-bold outline-none placeholder:text-slate-600 focus:border-emerald-500/50 transition-all"
-                />
-              </label>
+            <div className="rounded-xl bg-slate-900/40 border border-white/10 px-3.5 py-2 text-right font-black text-white shadow-2xl backdrop-blur-md">
+              <p className="text-xs uppercase tracking-[0.16em] text-slate-400 font-black mb-0.5">Duration</p>
+              <p className="text-lg font-black text-white leading-none">{activeRoute.duration || 'N/A'}</p>
+            </div>
+          </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <label className="flex flex-col gap-1.5">
-                  <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 pl-1">
-                    Duration
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="e.g., 25 mins"
-                    required
-                    value={newDuration}
-                    onChange={(e) => setNewDuration(e.target.value)}
-                    className="rounded-xl border border-white/10 bg-white/5 px-3.5 py-2 text-sm text-white font-bold outline-none placeholder:text-slate-600 focus:border-emerald-500/50 transition-all"
-                  />
-                </label>
-
-                <label className="flex flex-col gap-1.5">
-                  <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 pl-1">
-                    Total Distance (optional)
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="e.g., 2.5 km"
-                    value={newDistance}
-                    onChange={(e) => setNewDistance(e.target.value)}
-                    className="rounded-xl border border-white/10 bg-white/5 px-3.5 py-2 text-sm text-white font-bold outline-none placeholder:text-slate-600 focus:border-emerald-500/50 transition-all"
-                  />
-                </label>
-              </div>
-
-              {/* Dynamic Steps Inputs inside Builder Form */}
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-400 pl-1">
-                    Itinerary Steps Details
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleAddStepInput}
-                    className="text-[10px] font-black uppercase tracking-wider text-emerald-300 hover:text-emerald-400 select-none cursor-pointer"
-                  >
-                    + Add Step
-                  </button>
+          {apiKey && (
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-900/40 border border-white/10 p-3 rounded-2xl">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-400">Active Guidance Map</span>
+                  <span className="text-[10px] text-slate-400 font-medium leading-tight">Select any step below to preview its specific map directions.</span>
                 </div>
-
-                <div className="flex flex-col gap-2.5 max-h-[260px] overflow-y-auto pr-1">
-                  {customSteps.map((step, sIdx) => (
-                    <div key={sIdx} className="grid gap-2.5 rounded-xl border border-white/5 bg-white/5 p-3.5 hover:border-white/10 transition">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-emerald-300 uppercase tracking-wide">Step {sIdx + 1}</span>
-                        {customSteps.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveStepInput(sIdx)}
-                            className="text-[10px] font-bold text-red-400 hover:text-red-500 tracking-wider select-none cursor-pointer"
-                          >
-                            ✖ Remove
-                          </button>
-                        )}
-                      </div>
-
-                      <input
-                        type="text"
-                        placeholder="e.g., Ride jeepney towards Quiapo"
-                        required
-                        value={step.instruction}
-                        onChange={(e) => updateStepInput(sIdx, 'instruction', e.target.value)}
-                        className="rounded-lg border border-white/10 bg-slate-950 px-3 py-1.5 text-xs text-white outline-none placeholder:text-slate-600 focus:border-emerald-500/40 transition"
-                      />
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="text"
-                          placeholder="Fare (₱) e.g., 14"
-                          value={step.fare}
-                          onChange={(e) => updateStepInput(sIdx, 'fare', e.target.value)}
-                          className="rounded-lg border border-white/10 bg-slate-950 px-3 py-1.5 text-xs text-white outline-none placeholder:text-slate-600 focus:border-emerald-500/40 transition"
-                        />
-                        <select
-                          value={step.commuterType}
-                          onChange={(e) => updateStepInput(sIdx, 'commuterType', e.target.value)}
-                          className="rounded-lg border border-white/10 bg-slate-950 px-3 py-1.5 text-xs text-white outline-none cursor-pointer focus:border-emerald-500/40 transition font-bold"
-                        >
-                          <option value="Student">Student Rate</option>
-                          <option value="Regular">Regular Rate</option>
-                        </select>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="text"
-                          placeholder="e.g., 3.1 km"
-                          value={step.distance}
-                          onChange={(e) => updateStepInput(sIdx, 'distance', e.target.value)}
-                          className="rounded-lg border border-white/10 bg-slate-950 px-3 py-1.5 text-xs text-white outline-none placeholder:text-slate-600 focus:border-emerald-500/40 transition"
-                        />
-                        <select
-                          value={step.mode}
-                          onChange={(e) => updateStepInput(sIdx, 'mode', e.target.value)}
-                          className="rounded-lg border border-white/10 bg-slate-950 px-3 py-1.5 text-xs text-white outline-none cursor-pointer focus:border-emerald-500/40 transition font-bold"
-                        >
-                          <option value="Jeepney">Jeepney</option>
-                          <option value="Bus">Bus</option>
-                          <option value="LRT/MRT">LRT/MRT</option>
-                          <option value="Walking">Walking</option>
-                        </select>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="mt-2 w-full rounded-xl bg-emerald-500 hover:bg-emerald-400 p-3 text-sm font-black uppercase tracking-wider text-slate-950 shadow-[0_0_15px_rgba(52,211,153,0.35)] transition-all active:scale-95 cursor-pointer select-none"
-              >
-                Submit Route Itinerary
-              </button>
-            </form>
-          </aside>
-        ) : (
-          /* Route Detail Viewer */
-          <article className="lg:col-span-2 rounded-[32px] border border-white/10 bg-white/5 p-5 sm:p-6 shadow-2xl backdrop-blur-md transition-all duration-300 max-h-[720px] overflow-y-auto flex flex-col gap-5">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.15)]">
-                    Option {activeIdx + 1} Detail View
-                  </span>
-                  {activeRoute.isCustom && (
-                    <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-amber-300 animate-pulse">
-                      ★ Custom Itinerary
-                    </span>
-                  )}
-                </div>
-                <h2 className="text-xl font-black text-white tracking-tight uppercase mt-1 leading-tight">
-                  {activeRoute.summary || `Alternative Option ${activeIdx + 1}`}
-                </h2>
-              </div>
-
-              <div className="flex items-center gap-3">
                 <button
-                  onClick={() => handleLikeRoute(activeRoute.summary || `Option ${activeIdx + 1}`)}
-                  className="rounded-xl bg-emerald-500/15 border border-emerald-500/25 hover:bg-emerald-500/30 px-3.5 py-2 text-xs font-black uppercase tracking-wider text-emerald-300 transition-colors cursor-pointer active:scale-95 flex items-center gap-2 select-none"
+                  type="button"
+                  onClick={() => setIsEnlarged(!isEnlarged)}
+                  className="inline-flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1.5 text-xs font-black text-slate-300 transition-colors shadow-sm cursor-pointer active:scale-95 uppercase tracking-wider select-none"
                 >
-                  ▲ Like ({routeLikes[activeRoute.summary || `Option ${activeIdx + 1}`] || 0})
+                  {isEnlarged ? 'Shrink Map ⤬' : 'Enlarge Map ⤢'}
                 </button>
-                <div className="rounded-xl bg-slate-900/40 border border-white/10 px-3.5 py-2 text-right font-black text-white shadow-2xl backdrop-blur-md">
-                  <p className="text-xs uppercase tracking-[0.16em] text-slate-400 font-black mb-0.5">Duration</p>
-                  <p className="text-lg font-black text-white leading-none">{activeRoute.duration || 'N/A'}</p>
-                </div>
+              </div>
+
+              <div className={`rounded-[24px] border border-white/10 bg-slate-950 overflow-hidden shadow-2xl transition-all duration-300 w-full ${isEnlarged ? 'h-[500px] scale-[1.01]' : 'aspect-video min-h-[220px]'}`}>
+                <iframe
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  referrerPolicy="no-referrer-when-downgrade"
+                  src={iframeSrc}
+                />
               </div>
             </div>
+          )}
 
-            {/* Live Visual Map Frame */}
-            {apiKey && (
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-900/40 border border-white/10 p-3 rounded-2xl">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-400">Live Navigation Map</span>
-                    <span className="text-[10px] text-slate-400 font-medium leading-tight">Accurate step-by-step route view</span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex bg-white/5 border border-white/10 rounded-xl p-1 gap-1">
-                      {['transit', 'walking', 'driving'].map((m) => (
-                        <button
-                          key={m}
-                          onClick={() => setMapMode(m)}
-                          className={`px-3 py-1 text-xs font-black rounded-lg uppercase tracking-wider transition duration-200 cursor-pointer ${mapMode === m ? 'bg-emerald-500 text-slate-950 font-black shadow-md' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
-                        >
-                          {m}
-                        </button>
-                      ))}
+          <div className="grid gap-2">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400 mb-0.5 pl-1">Step-by-Step Commute Guide</p>
+            {activeRoute.steps.map((step, index) => {
+              const estimatedFare = getStepFare(step)
+              const isActiveStep = index === activeStepIdx
+
+              return (
+                <button
+                  key={`${step.instruction}-${index}`}
+                  onClick={() => setActiveStepIdx(index)}
+                  className={`rounded-xl border hover:bg-white/10 px-3.5 py-3 transition-all duration-300 hover:shadow-xl text-left cursor-pointer w-full flex flex-col gap-2 ${
+                    isActiveStep
+                      ? 'bg-emerald-500/10 border-emerald-500/40 shadow-[0_0_20px_rgba(52,211,153,0.15)] ring-2 ring-emerald-500/20'
+                      : 'border-white/10 bg-white/5 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex flex-col gap-2 w-full">
+                    <div className="flex flex-wrap items-center justify-between gap-2 w-full">
+                      <p className={`text-xs font-black leading-relaxed ${isActiveStep ? 'text-emerald-300' : 'text-slate-100'}`}>
+                        {index + 1}. {step.instruction}
+                      </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setIsEnlarged(!isEnlarged)}
-                      className="inline-flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1.5 text-xs font-black text-slate-300 transition-colors shadow-sm cursor-pointer active:scale-95 uppercase tracking-wider select-none"
-                    >
-                      {isEnlarged ? 'Shrink Map ⤬' : 'Enlarge Map ⤢'}
-                    </button>
-                  </div>
-                </div>
-
-                <div className={`rounded-[24px] border border-white/10 bg-slate-950 overflow-hidden shadow-2xl transition-all duration-300 w-full ${isEnlarged ? 'h-[500px] scale-[1.01]' : 'aspect-video min-h-[220px]'}`}>
-                  <iframe
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    loading="lazy"
-                    allowFullScreen
-                    referrerPolicy="no-referrer-when-downgrade"
-                    src={iframeSrc}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Turn-by-turn steps breakdown */}
-            <div className="grid gap-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400 mb-0.5 pl-1">Step-by-Step Commute Guide</p>
-              {activeRoute.steps.map((step, index) => {
-                const trainGuide = getTrainIntermediateStations(step.departureStop, step.arrivalStop)
-                const estimatedFare = getStepFare(step)
-
-                return (
-                  <div
-                    key={`${step.instruction}-${index}`}
-                    className="rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-3.5 py-3 transition-all duration-200 hover:shadow-xl"
-                  >
-                    <div className="flex flex-col gap-2">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="text-xs font-black text-slate-100 leading-relaxed">
-                          {index + 1}. {step.instruction}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                        <span className="rounded-full bg-emerald-500/15 border border-emerald-500/25 px-2.5 py-0.5 text-[10px] font-black tracking-wider uppercase text-emerald-400 shrink-0">
-                          💵 Payment: {step.fare || estimatedFare}
-                        </span>
-                        {step.commuterType && (
-                          <span className="rounded-full bg-amber-500/15 border border-amber-500/25 px-2.5 py-0.5 text-[10px] font-black tracking-wider uppercase text-amber-400 shrink-0">
-                            👤 {step.commuterType}
-                          </span>
-                        )}
-                        <span className="rounded-full bg-white/5 border border-white/10 px-2.5 py-0.5 text-[10px] font-black tracking-wider uppercase text-slate-300 shadow-sm">
-                          {step.mode}
-                        </span>
-                        {step.line && (
-                          <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[10px] font-black tracking-wider uppercase text-emerald-400">
-                            {step.line}
-                          </span>
-                        )}
-                        {step.duration && (
-                          <span className="rounded-full bg-white/5 border border-white/5 px-2 py-0.5 text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-                            {step.duration}
-                          </span>
-                        )}
-                      </div>
-                      {(step.departureStop || step.arrivalStop) && (
-                        <p className="mt-1 text-[10px] font-black text-slate-400 flex items-center gap-1.5 pl-0.5 uppercase tracking-wide">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          {step.departureStop || 'Departure'}{' → '}{step.arrivalStop || 'Destination'}
-                        </p>
-                      )}
-
-                      {/* Station breakdown details */}
-                      {trainGuide && (
-                        <div className="mt-2.5 border-t border-white/10 pt-2.5 flex flex-col gap-1.5">
-                          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-400">
-                            🚞 Stations Breakdown
-                          </p>
-                          <div className="flex flex-col gap-2 border-l-2 border-emerald-500/40 ml-2.5 pl-3 pt-0.5">
-                            {trainGuide.map((station, sIdx) => (
-                              <div key={sIdx} className="relative flex items-center gap-2 text-xs font-bold text-slate-300">
-                                <span className="h-2 w-2 rounded-full bg-emerald-500 border-2 border-slate-900 shadow-sm absolute -left-[17px]" />
-                                <span className="font-black text-white text-[11px]">{station.name}</span>
-                                <span className="text-[9px] bg-white/5 border border-white/10 text-slate-400 px-1.5 py-0.5 rounded font-black uppercase">
-                                  +{station.estMinutes}m
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                    <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                      <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-black tracking-wider uppercase shrink-0 ${
+                        isActiveStep ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'bg-emerald-500/15 border-emerald-500/25 text-emerald-400'
+                      }`}>
+                        💵 Payment: {step.fare || estimatedFare}
+                      </span>
+                      <span className="rounded-full bg-white/5 border border-white/10 px-2.5 py-0.5 text-[10px] font-black tracking-wider uppercase text-slate-300 shadow-sm">
+                        {(step.mode || '').toLowerCase().includes('tram') ? 'LRT Train' : step.mode}
+                      </span>
                     </div>
                   </div>
-                )
-              })}
-            </div>
-          </article>
-        )}
+                </button>
+              )
+            })}
+          </div>
+        </article>
 
-        {/* 3. Actions / Compact Sidebar Section */}
         <aside className="lg:col-span-1 grid gap-5 content-start max-h-[720px] overflow-y-auto pr-1">
           <div className="rounded-[28px] border border-white/10 bg-white/5 p-4 sm:p-5 shadow-2xl backdrop-blur-md flex flex-col gap-3 hover:-translate-y-1 transition duration-300">
             <div className="flex flex-wrap justify-between items-center gap-2">
