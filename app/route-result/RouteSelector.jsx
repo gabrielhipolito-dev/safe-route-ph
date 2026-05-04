@@ -398,12 +398,12 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                             const linesConfig = [
                               {
                                 name: 'LRT-1',
-                                keywords: ['lrt-1', 'dr santos', 'baclaran', 'roosevelt', 'fpj'],
+                                keywords: ['lrt-1', 'dr santos', 'baclaran', 'roosevelt', 'fpj', 'fernando poe', 'gil puyat'],
                                 stops: [
                                   'Baclaran', 'EDSA', 'Libertad', 'Gil Puyat', 'Vito Cruz', 'Quirino',
                                   'Pedro Gil', 'UN Avenue', 'Central Terminal', 'Carriedo',
                                   'Doroteo Jose', 'Bambang', 'Tayuman', 'Blumentritt', 'Abad Santos',
-                                  'R. Papa', '5th Avenue', 'Monumento', 'Balintawak', 'Roosevelt (FPJ)',
+                                  'R. Papa', '5th Avenue', 'Monumento', 'Balintawak', 'Roosevelt', 'Fernando Poe Jr',
                                   'Redemptorist', 'MIA', 'Asia World', 'Ninoy Aquino', 'Dr. Santos'
                                 ]
                               },
@@ -483,14 +483,11 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                               }
                             }
 
-                            if (lower.includes('tram towards dr. santos') || lower.includes('tram towards baclaran') || lower.includes('tram towards roosevelt') || lower.includes('tram towards fpj')) {
-                              text = text.replace(/tram/i, 'LRT-1 Train')
-                            } else if (lower.includes('tram towards recto') || lower.includes('tram towards antipolo')) {
-                              text = text.replace(/tram/i, 'LRT-2 Train')
-                            } else if (lower.includes('tram towards north avenue') || lower.includes('tram towards taft')) {
-                              text = text.replace(/tram/i, 'MRT-3 Train')
-                            } else if (lower.includes('tram')) {
-                              text = text.replace(/tram/i, 'LRT Train')
+                            // Dynamically replace 'tram' with the appropriate train line name
+                            // analyze what google api just send and format it cleanly
+                            if (lower.includes('tram')) {
+                              const linePrefix = step.line ? step.line.toUpperCase() : (activeLine ? activeLine.name : 'LRT');
+                              text = text.replace(/tram/i, `${linePrefix} Train`);
                             }
                             return text
                           })()
@@ -524,12 +521,12 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                           const linesConfig = [
                             {
                               name: 'LRT-1',
-                              keywords: ['lrt-1', 'dr santos', 'baclaran', 'roosevelt', 'fpj'],
+                              keywords: ['lrt-1', 'dr santos', 'baclaran', 'roosevelt', 'fpj', 'fernando poe', 'gil puyat'],
                               stops: [
                                 'Baclaran', 'EDSA', 'Libertad', 'Gil Puyat', 'Vito Cruz', 'Quirino',
                                 'Pedro Gil', 'UN Avenue', 'Central Terminal', 'Carriedo',
                                 'Doroteo Jose', 'Bambang', 'Tayuman', 'Blumentritt', 'Abad Santos',
-                                'R. Papa', '5th Avenue', 'Monumento', 'Balintawak', 'Roosevelt (FPJ)',
+                                'R. Papa', '5th Avenue', 'Monumento', 'Balintawak', 'Roosevelt', 'Fernando Poe Jr',
                                 'Redemptorist', 'MIA', 'Asia World', 'Ninoy Aquino', 'Dr. Santos'
                               ]
                             },
