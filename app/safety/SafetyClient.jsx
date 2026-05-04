@@ -301,32 +301,34 @@ export default function SafetyClient({ apiKey }) {
 
       {/* SECTION 4 — REPORT FORM MODAL */}
       {showForm && (
-        <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900/90 border border-white/20 rounded-[32px] shadow-[0_0_50px_rgba(52,211,153,0.2)] max-w-lg w-full p-6 backdrop-blur-xl">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="font-black text-white text-lg tracking-tight uppercase">Report a Safety Concern</h2>
+        <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-md z-50 flex items-center justify-center p-3 select-none">
+          <div className="bg-slate-900/95 border border-white/20 rounded-2xl shadow-[0_0_50px_rgba(52,211,153,0.2)] max-w-md w-full p-4 sm:p-5 backdrop-blur-xl max-h-[92vh] overflow-y-auto scrollbar-none flex flex-col gap-3">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="font-black text-white text-base tracking-tight uppercase flex items-center gap-1.5">
+                <span>➕</span> Report a Safety Concern
+              </h2>
               <button
                 onClick={() => setShowForm(false)}
-                className="text-slate-400 hover:text-white text-xl font-black cursor-pointer transition-colors"
+                className="text-slate-400 hover:text-white text-xl font-black cursor-pointer transition-colors p-1"
               >
                 ✕
               </button>
             </div>
 
-            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-3.5 flex gap-3 mb-4 shadow-[0_0_12px_rgba(52,211,153,0.1)]">
-              <span className="text-2xl">🤖</span>
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-3 flex gap-3 mb-1 shadow-[0_0_12px_rgba(52,211,153,0.1)]">
+              <span className="text-xl">🤖</span>
               <div>
                 <p className="text-xs font-black text-emerald-400 uppercase tracking-[0.12em]">Screened by AI</p>
-                <p className="text-xs text-slate-400 mt-0.5 font-medium leading-relaxed">
+                <p className="text-[11px] text-slate-400 mt-0.5 font-medium leading-relaxed">
                   Your report will be screened before publishing to ensure strict student safety.
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               <div>
-                <div className="flex justify-between items-end mb-1.5 pl-0.5 pr-1">
-                  <label className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400">Route/Location</label>
+                <div className="flex justify-between items-end mb-1 pl-0.5 pr-1">
+                  <label className="block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Route/Location</label>
                   {reportLocation.lat && (
                     <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">
                       {reportLocation.lat.toFixed(5)}, {reportLocation.lng.toFixed(5)}
@@ -337,23 +339,23 @@ export default function SafetyClient({ apiKey }) {
                   ref={searchInputRef}
                   type="text"
                   placeholder="Search a place or click on the map"
-                  className="border border-white/10 bg-slate-950/60 rounded-xl px-4 py-3 text-sm w-full text-white focus:ring-2 focus:ring-emerald-500/20 outline-none focus:border-emerald-500 font-bold transition-all"
+                  className="border border-white/10 bg-slate-950/60 rounded-xl px-3.5 py-2.5 text-xs w-full text-white focus:ring-2 focus:ring-emerald-500/20 outline-none focus:border-emerald-500 font-bold transition-all"
                   onChange={(e) => setReportLocation(prev => ({ ...prev, address: e.target.value }))}
                 />
                 <div 
                   ref={modalMapRef} 
-                  className="w-full h-[220px] bg-slate-950/40 rounded-xl mt-3 border border-white/10 shadow-inner overflow-hidden"
+                  className="w-full h-[140px] bg-slate-950/40 rounded-xl mt-2 border border-white/10 shadow-inner overflow-hidden"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400 mb-1.5 pl-0.5">Category</label>
-                <div className="grid grid-cols-2 gap-2">
+                <label className="block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 mb-1 pl-0.5">Category</label>
+                <div className="grid grid-cols-2 gap-1.5">
                   {reportCategories.map((cat) => (
                     <div
                       key={cat.id}
                       onClick={() => setSelectedCategory(cat.id)}
-                      className={`cursor-pointer rounded-xl border p-3 text-xs font-black uppercase tracking-[0.12em] transition-all text-center ${
+                      className={`cursor-pointer rounded-xl border p-2 text-[11px] font-black uppercase tracking-[0.12em] transition-all text-center ${
                         selectedCategory === cat.id
                           ? 'border-emerald-500 bg-emerald-500/15 text-emerald-300 shadow-[0_0_12px_rgba(52,211,153,0.2)]'
                           : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20 hover:text-slate-200'
@@ -366,22 +368,22 @@ export default function SafetyClient({ apiKey }) {
               </div>
 
               <div>
-                <label className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400 mb-1.5 pl-0.5">Description</label>
+                <label className="block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 mb-1 pl-0.5">Description</label>
                 <textarea
-                  rows="3"
+                  rows="2"
                   placeholder="Describe what happened clearly."
-                  className="border border-white/10 bg-slate-950/60 rounded-xl px-4 py-3 text-sm w-full text-white resize-none focus:ring-2 focus:ring-emerald-500/20 outline-none focus:border-emerald-500 font-bold transition-all"
+                  className="border border-white/10 bg-slate-950/60 rounded-xl px-3.5 py-2.5 text-xs w-full text-white resize-none focus:ring-2 focus:ring-emerald-500/20 outline-none focus:border-emerald-500 font-bold transition-all"
                 ></textarea>
               </div>
 
-              <div>
+              <div className="mt-1">
                 <button
                   onClick={() => setShowForm(false)}
-                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-4 rounded-2xl transition duration-300 shadow-[0_0_15px_rgba(52,211,153,0.35)] hover:shadow-[0_0_25px_rgba(52,211,153,0.5)] active:scale-95 cursor-pointer uppercase tracking-wider text-sm"
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-2xl transition duration-300 shadow-[0_0_15px_rgba(52,211,153,0.35)] hover:shadow-[0_0_25px_rgba(52,211,153,0.5)] active:scale-95 cursor-pointer uppercase tracking-wider text-xs"
                 >
                   Submit Report
                 </button>
-                <p className="text-xs text-slate-500 text-center mt-2 font-medium">
+                <p className="text-[10px] text-slate-500 text-center mt-1.5 font-medium">
                   Your identity is anonymous. Reports are AI-screened before publishing.
                 </p>
               </div>
