@@ -5,42 +5,87 @@ import { useState } from 'react';
 const initialCards = [
   {
     id: 1,
-    route: "Adamson to Quiapo",
-    vehicleEmoji: "🚌",
-    vehicleType: "Jeepney",
+    route: "Adamson to Kalaw",
+    vehicleEmoji: "🛺",
+    vehicleType: "Tricycle",
     statusText: "STILL RUNNING",
     statusColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-    time: "9:45 PM",
-    pulsingText: "Leaves in ~45 mins",
-    pulsingTextColor: "text-emerald-400 font-black animate-pulse text-xs",
-    reported: "12 mins ago",
-    confirmed: 8
+    time: "10:00 PM",
+    subtext: "Usual Last Trip Time",
+    subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
+    vouched: 8,
+    disputed: 0,
+    hasConfirmButton: true
   },
   {
     id: 2,
-    route: "UST to Divisoria",
-    vehicleEmoji: "🚌",
-    vehicleType: "Jeepney",
-    statusText: "LAST TRIP SOON",
+    route: "UST to Fairview",
+    vehicleEmoji: "🚐",
+    vehicleType: "UV Express",
+    statusText: "FILLING UP LAST RIDE",
     statusColor: "bg-amber-500/10 text-amber-400 border-amber-500/30",
-    time: "10:00 PM",
-    pulsingText: "Leaves in ~5 mins!",
-    pulsingTextColor: "text-orange-500 font-black animate-pulse text-xs",
-    reported: "5 mins ago",
-    confirmed: 3
+    time: "9:45 PM",
+    subtext: "Currently at terminal",
+    subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
+    vouched: 3,
+    disputed: 1,
+    hasConfirmButton: true
   },
   {
     id: 3,
     route: "DLSU to Lawton",
-    vehicleEmoji: "🚐",
-    vehicleType: "UV Express",
-    statusText: "LAST TRIP LEFT",
+    vehicleEmoji: "🚙",
+    vehicleType: "Jeepney",
+    statusText: "TERMINAL CLOSED",
     statusColor: "bg-rose-500/10 text-rose-400 border-rose-500/30",
     time: "9:30 PM",
-    pulsingText: "Departed",
-    pulsingTextColor: "text-slate-500 font-bold text-xs",
-    reported: "25 mins ago",
-    confirmed: 15
+    subtext: "Last trip departed",
+    subtextColor: "text-rose-400/80 text-xs mt-1 font-medium tracking-wide",
+    vouched: 5,
+    disputed: 0,
+    hasConfirmButton: false
+  },
+  {
+    id: 4,
+    route: "Recto to Antipolo",
+    vehicleEmoji: "🚈",
+    vehicleType: "LRT",
+    statusText: "STILL RUNNING",
+    statusColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+    time: "9:30 PM",
+    subtext: "LRT-2 Schedule",
+    subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
+    vouched: 12,
+    disputed: 1,
+    hasConfirmButton: true
+  },
+  {
+    id: 5,
+    route: "Taft Ave to North Ave",
+    vehicleEmoji: "🚇",
+    vehicleType: "MRT",
+    statusText: "FILLING UP LAST RIDE",
+    statusColor: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+    time: "9:15 PM",
+    subtext: "MRT-3 Schedule",
+    subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
+    vouched: 24,
+    disputed: 2,
+    hasConfirmButton: true
+  },
+  {
+    id: 6,
+    route: "Ayala to Biñan",
+    vehicleEmoji: "🚌",
+    vehicleType: "Bus",
+    statusText: "STILL RUNNING",
+    statusColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+    time: "10:30 PM",
+    subtext: "One Ayala Terminal",
+    subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
+    vouched: 18,
+    disputed: 0,
+    hasConfirmButton: true
   }
 ];
 
@@ -50,26 +95,39 @@ export default function LastTrip() {
   const [selectedFilter, setSelectedFilter] = useState('All Active');
   const [showForm, setShowForm] = useState(false);
   const [confirming, setConfirming] = useState(null);
+  const [disputing, setDisputing] = useState(null);
 
   // Form states
-  const [newRoute, setNewRoute] = useState('');
+  const [newOrigin, setNewOrigin] = useState('');
+  const [newDestination, setNewDestination] = useState('');
   const [newVehicleType, setNewVehicleType] = useState('Jeepney');
   const [newTime, setNewTime] = useState('');
 
-  const handleConfirm = (id) => {
+  const handleVouch = (id) => {
     setConfirming(id);
     setTrips(trips.map(card => {
       if (card.id === id) {
-        return { ...card, confirmed: card.confirmed + 1 };
+        return { ...card, vouched: card.vouched + 1 };
       }
       return card;
     }));
-    setTimeout(() => setConfirming(null), 2500);
+    setTimeout(() => setConfirming(null), 2000);
+  };
+
+  const handleDispute = (id) => {
+    setDisputing(id);
+    setTrips(trips.map(card => {
+      if (card.id === id) {
+        return { ...card, disputed: card.disputed + 1 };
+      }
+      return card;
+    }));
+    setTimeout(() => setDisputing(null), 2000);
   };
 
   const handleReportSubmit = (e) => {
     e.preventDefault();
-    if (!newRoute || !newTime) return;
+    if (!newOrigin || !newDestination || !newTime) return;
 
     // Convert time string (e.g. 21:45) to 12-hour AM/PM format
     const [hourStr, minStr] = newTime.split(':');
@@ -81,20 +139,22 @@ export default function LastTrip() {
 
     const newCard = {
       id: Date.now(),
-      route: newRoute,
-      vehicleEmoji: newVehicleType === 'Jeepney' ? '🚌' : '🚐',
+      route: `${newOrigin} to ${newDestination}`,
+      vehicleEmoji: newVehicleType === 'Jeepney' ? '🚙' : newVehicleType === 'UV Express' ? '🚐' : newVehicleType === 'Tricycle' ? '🛺' : newVehicleType === 'LRT' ? '🚈' : newVehicleType === 'MRT' ? '🚇' : '🚌',
       vehicleType: newVehicleType,
       statusText: "STILL RUNNING",
       statusColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
       time: formattedTime,
-      pulsingText: "Leaves soon",
-      pulsingTextColor: "text-emerald-400 font-black animate-pulse text-xs",
-      reported: "Just now",
-      confirmed: 0
+      subtext: "Usual Last Trip Time",
+      subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
+      vouched: 0,
+      disputed: 0,
+      hasConfirmButton: true
     };
 
     setTrips([newCard, ...trips]);
-    setNewRoute('');
+    setNewOrigin('');
+    setNewDestination('');
     setNewTime('');
     setNewVehicleType('Jeepney');
     setShowForm(false);
@@ -106,11 +166,9 @@ export default function LastTrip() {
       card.vehicleType.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesFilter = 
-      selectedFilter === 'All Active' ? (card.statusText !== 'LAST TRIP LEFT') :
-      selectedFilter === 'Missed' ? (card.statusText === 'LAST TRIP LEFT') :
-      selectedFilter === 'Jeepney' ? (card.vehicleType === 'Jeepney') :
-      selectedFilter === 'UV Express' ? (card.vehicleType === 'UV Express') :
-      true;
+      selectedFilter === 'All Active' ? (card.statusText !== 'TERMINAL CLOSED') :
+      selectedFilter === 'Missed' ? (card.statusText === 'TERMINAL CLOSED') :
+      card.vehicleType === selectedFilter;
 
     return matchesSearch && matchesFilter;
   });
@@ -181,7 +239,7 @@ export default function LastTrip() {
           </div>
 
           <div className="flex gap-2.5 flex-wrap">
-            {['All Active', 'Jeepney', 'UV Express', 'Missed'].map((filter) => {
+            {['All Active', 'Jeepney', 'UV Express', 'Tricycle', 'LRT', 'MRT', 'Bus', 'Missed'].map((filter) => {
               const isSelected = selectedFilter === filter;
               return (
                 <button
@@ -238,61 +296,85 @@ export default function LastTrip() {
 
                     <div className="my-4 h-px bg-white/5 group-hover:bg-emerald-500/10 transition-colors" />
 
-                    {/* Time display row with pulsing text */}
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4">
+                    {/* Time display row */}
+                    <div className="flex flex-col mb-4">
                       <span className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-none">
                         {card.time}
                       </span>
-                      {card.pulsingText && (
-                        <span className={`inline-flex items-center gap-1.5 ${card.pulsingTextColor}`}>
-                          {card.statusText !== 'LAST TRIP LEFT' && (
-                            <span className="relative flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-current"></span>
-                            </span>
-                          )}
-                          {card.pulsingText}
+                      {card.subtext && (
+                        <span className={card.subtextColor}>
+                          {card.subtext}
                         </span>
                       )}
-                    </div>
-
-                    <div className="text-xs text-slate-500 flex flex-col sm:flex-row justify-between gap-1 mt-2 mb-4">
-                      <span className="font-medium tracking-wide">Last reported departure</span>
-                      <span className="font-black text-emerald-400 uppercase tracking-wider text-[11px]">Reported {card.reported}</span>
                     </div>
                   </div>
 
                   {/* Footer action */}
                   <div className="border-t border-white/5 pt-4 mt-auto flex flex-col gap-3">
-                    <div className="flex justify-between items-center">
-                      <div className="text-xs text-slate-400 flex items-center gap-1.5 font-bold uppercase tracking-wider">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                        {card.confirmed} {card.confirmed === 1 ? 'confirmed' : 'confirmed'}
+                    <div className="flex justify-between items-center flex-wrap gap-2">
+                      <div className="text-xs text-slate-400 flex items-center gap-3 font-bold uppercase tracking-wider">
+                        {card.hasConfirmButton ? (
+                          <div className="flex gap-2.5">
+                            <span className="flex items-center gap-1 bg-emerald-500/5 px-2 py-1 rounded-lg border border-emerald-500/10">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                              </svg>
+                              {card.vouched}
+                            </span>
+                            <span className="flex items-center gap-1 bg-rose-500/5 px-2 py-1 rounded-lg border border-rose-500/10">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                              </svg>
+                              {card.disputed}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-rose-300/90 font-medium tracking-wide">Verified by {card.vouched} students</span>
+                        )}
                       </div>
-                      {confirming === card.id ? (
-                        <div className="text-emerald-400 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition duration-300">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                          </svg>
-                          ✓ Confirmed
+
+                      {card.hasConfirmButton && (
+                        <div className="flex gap-2 items-center">
+                          {confirming === card.id ? (
+                            <div className="text-emerald-400 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition duration-300 animate-pulse">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                              </svg>
+                              ✓ Vouched
+                            </div>
+                          ) : (
+                            <button 
+                              onClick={() => handleVouch(card.id)}
+                              className="border border-white/10 hover:border-emerald-400/40 hover:bg-emerald-500/10 hover:text-emerald-300 bg-slate-800/40 text-slate-300 text-xs font-black px-3 py-2 rounded-xl transition-all duration-300 active:scale-95 uppercase tracking-wider cursor-pointer flex items-center gap-1 group/vouch shrink-0"
+                            >
+                              <span className="text-xs text-slate-400 group-hover/vouch:text-emerald-300 transition-colors">▲</span> Vouch
+                            </button>
+                          )}
+
+                          {disputing === card.id ? (
+                            <div className="text-rose-400 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition duration-300 animate-pulse">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                              ✓ Disputed
+                            </div>
+                          ) : (
+                            <button 
+                              onClick={() => handleDispute(card.id)}
+                              className="border border-white/10 hover:border-rose-400/40 hover:bg-rose-500/10 hover:text-rose-300 bg-slate-800/40 text-slate-300 text-xs font-black px-3 py-2 rounded-xl transition-all duration-300 active:scale-95 uppercase tracking-wider cursor-pointer flex items-center gap-1 group/dispute shrink-0"
+                            >
+                              <span className="text-xs text-slate-400 group-hover/dispute:text-rose-300 transition-colors">▼</span> Dispute
+                            </button>
+                          )}
                         </div>
-                      ) : (
-                        <button 
-                          onClick={() => handleConfirm(card.id)}
-                          className="border border-white/10 hover:border-emerald-400/40 hover:bg-emerald-500/10 hover:text-emerald-300 bg-slate-800/40 text-slate-300 text-xs font-black px-4 py-2.5 rounded-xl transition-all duration-300 active:scale-95 uppercase tracking-wider cursor-pointer flex items-center gap-1 shadow-sm"
-                        >
-                          Confirm
-                        </button>
                       )}
                     </div>
 
-                    {card.statusText === "LAST TRIP LEFT" && (
+                    {!card.hasConfirmButton && (
                       <div className="bg-rose-500/5 border border-rose-500/15 rounded-2xl p-3 flex gap-2 items-start mt-1">
                         <span className="text-base text-rose-400">⚠️</span>
                         <span className="text-xs text-rose-300/80 font-medium leading-relaxed">
-                          The last scheduled trip has departed. Consider exploring other student ride shares or alternative transport.
+                          Terminal is closed and no vehicles are running. Explore alternative routes or transport.
                         </span>
                       </div>
                     )}
@@ -331,43 +413,59 @@ export default function LastTrip() {
             </div>
 
             <form onSubmit={handleReportSubmit} className="flex flex-col gap-4.5">
-              <div>
-                <label className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400 mb-1.5 pl-0.5">Route or University</label>
-                <input 
-                  type="text" 
-                  required
-                  value={newRoute}
-                  onChange={(e) => setNewRoute(e.target.value)}
-                  placeholder="e.g. Adamson to Quiapo"
-                  className="border border-white/10 bg-slate-950 rounded-xl px-4 py-3.5 text-sm w-full outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 text-white font-bold transition-all placeholder-slate-600"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400 mb-1.5 pl-0.5">Origin / Pick-up Point</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={newOrigin}
+                    onChange={(e) => setNewOrigin(e.target.value)}
+                    placeholder="e.g. Adamson University"
+                    className="border border-white/10 bg-slate-950 rounded-xl px-4 py-3.5 text-sm w-full outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 text-white font-bold transition-all placeholder-slate-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400 mb-1.5 pl-0.5">Destination / Drop-off</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={newDestination}
+                    onChange={(e) => setNewDestination(e.target.value)}
+                    placeholder="e.g. Kalaw"
+                    className="border border-white/10 bg-slate-950 rounded-xl px-4 py-3.5 text-sm w-full outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 text-white font-bold transition-all placeholder-slate-600"
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400 mb-1.5 pl-0.5">Vehicle Type</label>
-                <div className="flex gap-3">
-                  <button 
-                    type="button"
-                    onClick={() => setNewVehicleType('Jeepney')}
-                    className={`flex-1 rounded-xl px-4 py-3 text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 border cursor-pointer ${
-                      newVehicleType === 'Jeepney' 
-                        ? 'bg-emerald-400 text-slate-950 border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.3)]' 
-                        : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    🚌 Jeepney
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => setNewVehicleType('UV Express')}
-                    className={`flex-1 rounded-xl px-4 py-3 text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 border cursor-pointer ${
-                      newVehicleType === 'UV Express' 
-                        ? 'bg-emerald-400 text-slate-950 border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.3)]' 
-                        : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    🚐 UV Express
-                  </button>
+                <div className="flex flex-wrap gap-2.5">
+                  {[
+                    { label: 'Jeepney', emoji: '🚌' },
+                    { label: 'UV Express', emoji: '🚐' },
+                    { label: 'Tricycle', emoji: '🛺' },
+                    { label: 'LRT', emoji: '🚈' },
+                    { label: 'MRT', emoji: '🚇' },
+                    { label: 'Bus', emoji: '🚌' }
+                  ].map((vehicle) => {
+                    const isSelected = newVehicleType === vehicle.label;
+                    return (
+                      <button 
+                        key={vehicle.label}
+                        type="button"
+                        onClick={() => setNewVehicleType(vehicle.label)}
+                        className={`rounded-xl px-3.5 py-2.5 text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 border cursor-pointer ${
+                          isSelected 
+                            ? 'bg-emerald-400 text-slate-950 border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.3)]' 
+                            : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        {vehicle.emoji} {vehicle.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
