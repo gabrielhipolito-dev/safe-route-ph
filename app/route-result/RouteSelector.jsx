@@ -103,10 +103,6 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
 
   const activeRoute = uniqueRoutes[activeIdx] || uniqueRoutes[0]
 
-  useEffect(() => {
-    setActiveStepIdx(0)
-  }, [activeIdx])
-
   const iframeSrc = useMemo(() => {
     const keyToUse = apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
     if (!keyToUse) return ''
@@ -218,7 +214,10 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
           {uniqueRoutes.map((routeOpt, rIndex) => (
             <button
               key={rIndex}
-              onClick={() => setActiveIdx(rIndex)}
+              onClick={() => {
+                setActiveIdx(rIndex)
+                setActiveStepIdx(0)
+              }}
               className={`flex flex-col gap-2 p-4 rounded-[24px] transition-all duration-300 text-left border hover:-translate-y-1 ${activeIdx === rIndex
                   ? 'bg-emerald-500/10 border-emerald-400 text-white shadow-[0_0_25px_rgba(52,211,153,0.25)] font-black'
                   : 'bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10 text-slate-300 font-medium'
