@@ -128,6 +128,9 @@ export default function LastTrip() {
     if (!newOrigin || !newDestination) return;
 
     const formattedTime = `${newHour}:${newMinute} ${newAmpm}`;
+    const autoSubtext = newVehicleType === 'LRT' ? 'LRT-2 Schedule' :
+                        newVehicleType === 'MRT' ? 'MRT-3 Schedule' :
+                        'Usual Last Trip Time';
 
     const newCard = {
       id: Date.now(),
@@ -138,7 +141,7 @@ export default function LastTrip() {
       statusColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
       time: formattedTime,
       operatingDays: newOperatingDays,
-      subtext: "Usual Last Trip Time",
+      subtext: autoSubtext,
       subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
       vouched: 0,
       disputed: 0,
@@ -164,6 +167,13 @@ export default function LastTrip() {
     const ampm = match[3].toUpperCase();
     if (ampm === 'PM' && h < 12) h += 12;
     if (ampm === 'AM' && h === 12) h = 0;
+
+    // Public transit early morning hours continuation (e.g. 12 AM to 4 AM)
+    const now = new Date();
+    const curH = now.getHours();
+    if (curH >= 16 && ampm === 'AM' && h <= 4) {
+      h += 24;
+    }
     return h + m / 60;
   }
 
