@@ -22,7 +22,9 @@ export default function CustomRoutePage() {
     try {
       const stored = localStorage.getItem('custom_commute_itineraries')
       if (stored) {
-        setCustomRoutes(JSON.parse(stored))
+        setTimeout(() => {
+          setCustomRoutes(JSON.parse(stored))
+        }, 0)
       }
     } catch (err) {
       console.error('Failed to load local storage:', err)
