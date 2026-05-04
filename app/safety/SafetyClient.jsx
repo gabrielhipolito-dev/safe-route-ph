@@ -2,14 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { safetyReports } from '../data/reports'
-
-const safetyPins = [
-  { id: 1, name: 'University of the Philippines Diliman', lat: 14.6538, lng: 121.0685, type: 'green', status: 'Safe Zone' },
-  { id: 2, name: 'Adamson University (Ermita)', lat: 14.5872, lng: 120.9856, type: 'green', status: 'Safe Zone' },
-  { id: 3, name: 'Recto Avenue', lat: 14.6031, lng: 120.9852, type: 'red', status: 'Danger Zone' },
-  { id: 4, name: 'Espana Boulevard', lat: 14.6111, lng: 120.9892, type: 'orange', status: 'Caution Zone' },
-  { id: 5, name: 'Gil Puyat Station', lat: 14.5539, lng: 120.9967, type: 'orange', status: 'Caution Zone' },
-]
+import { safetyPins, reportCategories } from '../data/safetyMap'
 
 export default function SafetyClient({ apiKey }) {
   const [showForm, setShowForm] = useState(false)
@@ -175,12 +168,7 @@ export default function SafetyClient({ apiKey }) {
     }
   }, [showForm])
 
-  const categories = [
-    { id: 'night', label: '🌙 Unsafe at Night' },
-    { id: 'overcharging', label: '💰 Overcharging' },
-    { id: 'harassment', label: '⚠️ Harassment' },
-    { id: 'warning', label: '📢 General Warning' },
-  ]
+
 
   return (
     <div className="bg-slate-950 min-h-screen pt-12 pb-16 text-slate-100">
@@ -354,7 +342,7 @@ export default function SafetyClient({ apiKey }) {
               <div>
                 <label className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400 mb-1.5 pl-0.5">Category</label>
                 <div className="grid grid-cols-2 gap-2">
-                  {categories.map((cat) => (
+                  {reportCategories.map((cat) => (
                     <div
                       key={cat.id}
                       onClick={() => setSelectedCategory(cat.id)}
