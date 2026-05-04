@@ -309,8 +309,10 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                   {routeOpt.duration || 'N/A'}
                 </span>
               </div>
-              <span className="text-base font-black tracking-tight leading-snug line-clamp-1 uppercase">
-                {routeOpt.summary || `Alternative Option ${rIndex + 1}`}
+              <span className="text-[13px] sm:text-sm font-black tracking-tight leading-snug uppercase break-words pr-1">
+                {routeOpt.summary && !routeOpt.summary.toLowerCase().startsWith('alternative option')
+                  ? routeOpt.summary
+                  : `Commute Route ${rIndex + 1}`}
               </span>
               <div className="flex flex-wrap justify-between items-center gap-1.5 w-full mt-1 border-t border-white/10 pt-2">
                 <span className={`text-xs font-bold uppercase tracking-wide ${activeIdx === rIndex ? 'text-emerald-300' : 'text-slate-500'}`}>
@@ -330,8 +332,10 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
               <span className="rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.15)]">
                 Option {activeIdx + 1} Detail View
               </span>
-              <h2 className="text-xl font-black text-white tracking-tight uppercase mt-1 leading-tight">
-                {activeRoute.summary || `Alternative Option ${activeIdx + 1}`}
+              <h2 className="text-lg sm:text-xl font-black text-white tracking-tight uppercase mt-1 leading-tight break-words">
+                {activeRoute.summary && !activeRoute.summary.toLowerCase().startsWith('alternative option')
+                  ? activeRoute.summary
+                  : `Commute Route ${activeIdx + 1}`}
               </h2>
             </div>
 
