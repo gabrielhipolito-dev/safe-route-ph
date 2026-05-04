@@ -94,36 +94,12 @@ export default function LastTrip() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('All Active');
   const [showForm, setShowForm] = useState(false);
-  const [confirming, setConfirming] = useState(null);
-  const [disputing, setDisputing] = useState(null);
 
   // Form states
   const [newOrigin, setNewOrigin] = useState('');
   const [newDestination, setNewDestination] = useState('');
   const [newVehicleType, setNewVehicleType] = useState('Jeepney');
   const [newTime, setNewTime] = useState('');
-
-  const handleVouch = (id) => {
-    setConfirming(id);
-    setTrips(trips.map(card => {
-      if (card.id === id) {
-        return { ...card, vouched: card.vouched + 1 };
-      }
-      return card;
-    }));
-    setTimeout(() => setConfirming(null), 2000);
-  };
-
-  const handleDispute = (id) => {
-    setDisputing(id);
-    setTrips(trips.map(card => {
-      if (card.id === id) {
-        return { ...card, disputed: card.disputed + 1 };
-      }
-      return card;
-    }));
-    setTimeout(() => setDisputing(null), 2000);
-  };
 
   const handleReportSubmit = (e) => {
     e.preventDefault();
@@ -335,37 +311,17 @@ export default function LastTrip() {
 
                       {card.hasConfirmButton && (
                         <div className="flex gap-2 items-center">
-                          {confirming === card.id ? (
-                            <div className="text-emerald-400 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition duration-300 animate-pulse">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                              </svg>
-                              ✓ Vouched
-                            </div>
-                          ) : (
-                            <button 
-                              onClick={() => handleVouch(card.id)}
-                              className="border border-white/10 hover:border-emerald-400/40 hover:bg-emerald-500/10 hover:text-emerald-300 bg-slate-800/40 text-slate-300 text-xs font-black px-3 py-2 rounded-xl transition-all duration-300 active:scale-95 uppercase tracking-wider cursor-pointer flex items-center gap-1 group/vouch shrink-0"
-                            >
-                              <span className="text-xs text-slate-400 group-hover/vouch:text-emerald-300 transition-colors">▲</span> Vouch
-                            </button>
-                          )}
+                          <div 
+                            className="border border-white/10 hover:border-emerald-400/40 hover:bg-emerald-500/10 hover:text-emerald-300 bg-slate-800/40 text-slate-300 text-xs font-black px-3 py-2 rounded-xl transition-all duration-300 active:scale-95 uppercase tracking-wider flex items-center gap-1 group/vouch shrink-0"
+                          >
+                            <span className="text-xs text-slate-400 group-hover/vouch:text-emerald-300 transition-colors">▲</span> Vouch
+                          </div>
 
-                          {disputing === card.id ? (
-                            <div className="text-rose-400 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition duration-300 animate-pulse">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                              ✓ Disputed
-                            </div>
-                          ) : (
-                            <button 
-                              onClick={() => handleDispute(card.id)}
-                              className="border border-white/10 hover:border-rose-400/40 hover:bg-rose-500/10 hover:text-rose-300 bg-slate-800/40 text-slate-300 text-xs font-black px-3 py-2 rounded-xl transition-all duration-300 active:scale-95 uppercase tracking-wider cursor-pointer flex items-center gap-1 group/dispute shrink-0"
-                            >
-                              <span className="text-xs text-slate-400 group-hover/dispute:text-rose-300 transition-colors">▼</span> Dispute
-                            </button>
-                          )}
+                          <div 
+                            className="border border-white/10 hover:border-rose-400/40 hover:bg-rose-500/10 hover:text-rose-300 bg-slate-800/40 text-slate-300 text-xs font-black px-3 py-2 rounded-xl transition-all duration-300 active:scale-95 uppercase tracking-wider flex items-center gap-1 group/dispute shrink-0"
+                          >
+                            <span className="text-xs text-slate-400 group-hover/dispute:text-rose-300 transition-colors">▼</span> Dispute
+                          </div>
                         </div>
                       )}
                     </div>
