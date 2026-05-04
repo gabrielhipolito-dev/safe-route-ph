@@ -11,6 +11,7 @@ const initialCards = [
     statusText: "STILL RUNNING",
     statusColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
     time: "10:00 PM",
+    operatingDays: "Mon - Fri",
     subtext: "Usual Last Trip Time",
     subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
     vouched: 8,
@@ -25,6 +26,7 @@ const initialCards = [
     statusText: "FILLING UP LAST RIDE",
     statusColor: "bg-amber-500/10 text-amber-400 border-amber-500/30",
     time: "9:45 PM",
+    operatingDays: "Every Day",
     subtext: "Currently at terminal",
     subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
     vouched: 3,
@@ -39,6 +41,7 @@ const initialCards = [
     statusText: "TERMINAL CLOSED",
     statusColor: "bg-rose-500/10 text-rose-400 border-rose-500/30",
     time: "9:30 PM",
+    operatingDays: "Mon - Fri",
     subtext: "Last trip departed",
     subtextColor: "text-rose-400/80 text-xs mt-1 font-medium tracking-wide",
     vouched: 5,
@@ -53,6 +56,7 @@ const initialCards = [
     statusText: "STILL RUNNING",
     statusColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
     time: "9:30 PM",
+    operatingDays: "Every Day",
     subtext: "LRT-2 Schedule",
     subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
     vouched: 12,
@@ -67,6 +71,7 @@ const initialCards = [
     statusText: "FILLING UP LAST RIDE",
     statusColor: "bg-amber-500/10 text-amber-400 border-amber-500/30",
     time: "9:15 PM",
+    operatingDays: "Every Day",
     subtext: "MRT-3 Schedule",
     subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
     vouched: 24,
@@ -81,6 +86,7 @@ const initialCards = [
     statusText: "STILL RUNNING",
     statusColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
     time: "10:30 PM",
+    operatingDays: "Mon - Fri",
     subtext: "One Ayala Terminal",
     subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
     vouched: 18,
@@ -100,6 +106,7 @@ export default function LastTrip() {
   const [newDestination, setNewDestination] = useState('');
   const [newVehicleType, setNewVehicleType] = useState('Jeepney');
   const [newTime, setNewTime] = useState('');
+  const [newOperatingDays, setNewOperatingDays] = useState('Every Day');
 
   const handleReportSubmit = (e) => {
     e.preventDefault();
@@ -121,6 +128,7 @@ export default function LastTrip() {
       statusText: "STILL RUNNING",
       statusColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
       time: formattedTime,
+      operatingDays: newOperatingDays,
       subtext: "Usual Last Trip Time",
       subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
       vouched: 0,
@@ -133,6 +141,7 @@ export default function LastTrip() {
     setNewDestination('');
     setNewTime('');
     setNewVehicleType('Jeepney');
+    setNewOperatingDays('Every Day');
     setShowForm(false);
   };
 
@@ -274,9 +283,14 @@ export default function LastTrip() {
 
                     {/* Time display row */}
                     <div className="flex flex-col mb-4">
-                      <span className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-none">
-                        {card.time}
-                      </span>
+                      <div className="flex items-baseline justify-between gap-2">
+                        <span className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-none">
+                          {card.time}
+                        </span>
+                        <span className="text-[10px] sm:text-xs font-extrabold px-2.5 py-1 rounded-lg border bg-white/5 border-white/10 text-slate-300 tracking-wider uppercase backdrop-blur-sm shadow-sm shrink-0">
+                          🗓️ {card.operatingDays}
+                        </span>
+                      </div>
                       {card.subtext && (
                         <span className={card.subtextColor}>
                           {card.subtext}
@@ -311,15 +325,11 @@ export default function LastTrip() {
 
                       {card.hasConfirmButton && (
                         <div className="flex gap-2 items-center">
-                          <div 
-                            className="border border-white/10 hover:border-emerald-400/40 hover:bg-emerald-500/10 hover:text-emerald-300 bg-slate-800/40 text-slate-300 text-xs font-black px-3 py-2 rounded-xl transition-all duration-300 active:scale-95 uppercase tracking-wider flex items-center gap-1 group/vouch shrink-0"
-                          >
+                          <div className="border border-white/10 hover:border-emerald-400/40 hover:bg-emerald-500/10 hover:text-emerald-300 bg-slate-800/40 text-slate-300 text-xs font-black px-3 py-2 rounded-xl transition-all duration-300 active:scale-95 uppercase tracking-wider flex items-center gap-1 group/vouch shrink-0">
                             <span className="text-xs text-slate-400 group-hover/vouch:text-emerald-300 transition-colors">▲</span> Vouch
                           </div>
 
-                          <div 
-                            className="border border-white/10 hover:border-rose-400/40 hover:bg-rose-500/10 hover:text-rose-300 bg-slate-800/40 text-slate-300 text-xs font-black px-3 py-2 rounded-xl transition-all duration-300 active:scale-95 uppercase tracking-wider flex items-center gap-1 group/dispute shrink-0"
-                          >
+                          <div className="border border-white/10 hover:border-rose-400/40 hover:bg-rose-500/10 hover:text-rose-300 bg-slate-800/40 text-slate-300 text-xs font-black px-3 py-2 rounded-xl transition-all duration-300 active:scale-95 uppercase tracking-wider flex items-center gap-1 group/dispute shrink-0">
                             <span className="text-xs text-slate-400 group-hover/dispute:text-rose-300 transition-colors">▼</span> Dispute
                           </div>
                         </div>
@@ -426,14 +436,49 @@ export default function LastTrip() {
               </div>
 
               <div>
-                <label className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400 mb-1.5 pl-0.5">Reported Departure Time</label>
-                <input 
-                  type="time" 
-                  required
-                  value={newTime}
-                  onChange={(e) => setNewTime(e.target.value)}
-                  className="border border-white/10 bg-slate-950 rounded-xl px-4 py-3.5 text-sm w-full outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 text-white font-bold transition-all"
-                />
+                <label className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400 mb-1.5 pl-0.5">Operating Days</label>
+                <div className="flex flex-wrap gap-2">
+                  {['Every Day', 'Mon - Fri', 'Sat - Sun'].map((days) => {
+                    const isSelected = newOperatingDays === days;
+                    return (
+                      <button 
+                        key={days}
+                        type="button"
+                        onClick={() => setNewOperatingDays(days)}
+                        className={`rounded-xl px-3.5 py-2.5 text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center border cursor-pointer ${
+                          isSelected 
+                            ? 'bg-emerald-400 text-slate-950 border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.3)]' 
+                            : 'border-white/10 bg-slate-800/40 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        🗓️ {days}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400 mb-1.5 pl-0.5">
+                  Reported Departure Time (24-Hour Format)
+                </label>
+                <div className="flex gap-3">
+                  <input 
+                    type="time" 
+                    required
+                    value={newTime}
+                    onChange={(e) => setNewTime(e.target.value)}
+                    className="border border-white/10 bg-slate-950 rounded-xl px-4 py-3.5 text-sm w-full outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 text-white font-bold transition-all h-12"
+                  />
+                  {newTime && (
+                    <div className="flex items-center px-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-black rounded-xl uppercase tracking-wider h-12 shrink-0">
+                      ⏰ {newTime}
+                    </div>
+                  )}
+                </div>
+                <span className="text-[10px] text-slate-500 font-semibold uppercase mt-1 tracking-wide block pl-0.5">
+                  Format: HH:MM AM/PM e.g. 09:00 PM (Max 24 hour limit)
+                </span>
               </div>
 
               <div>
