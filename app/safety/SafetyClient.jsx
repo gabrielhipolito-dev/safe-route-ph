@@ -15,8 +15,13 @@ export default function SafetyClient({ apiKey }) {
   const [showForm, setShowForm] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('')
   const [activePin, setActivePin] = useState(safetyPins[2]) // Recto Avenue as initial pin
+  const [reportLocation, setReportLocation] = useState({ lat: null, lng: null, address: '' })
 
   const mapRef = useRef(null)
+  const modalMapRef = useRef(null)
+  const searchInputRef = useRef(null)
+  const modalMarkerRef = useRef(null)
+  const modalMapInstance = useRef(null)
 
   useEffect(() => {
     if (!apiKey) return
@@ -31,7 +36,7 @@ export default function SafetyClient({ apiKey }) {
         if (!existingScript) {
           const script = document.createElement('script')
           script.id = 'google-maps-js-api'
-          script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`
+          script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
           script.async = true
           script.defer = true
           script.onload = () => {
@@ -86,6 +91,89 @@ export default function SafetyClient({ apiKey }) {
       isMounted = false
     }
   }, [apiKey, activePin])
+
+  useEffect(() => {
+    if (showForm && modalMapRef.current && searchInputRef.current && window.google && window.google.maps) {
+      if (!modalMapInstance.current) {
+        const center = { lat: 14.5995, lng: 120.9842 } // Default to Manila
+        
+        const map = new window.google.maps.Map(modalMapRef.current, {
+          center: center,
+          zoom: 13,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+          gestureHandling: 'greedy',
+        })
+        modalMapInstance.current = map
+
+        const marker = new window.google.maps.Marker({
+          map: map,
+          draggable: true,
+          animation: window.google.maps.Animation.DROP,
+        })
+        modalMarkerRef.current = marker
+
+        const autocomplete = new window.google.maps.places.Autocomplete(searchInputRef.current, {
+          fields: ['place_id', 'geometry', 'name', 'formatted_address'],
+        })
+        autocomplete.bindTo('bounds', map)
+
+        const updateLocation = (lat, lng, addressStr) => {
+          setReportLocation({ lat, lng, address: addressStr })
+          if (searchInputRef.current) searchInputRef.current.value = addressStr
+        }
+
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace()
+          if (!place.geometry || !place.geometry.location) return
+
+          const newLat = place.geometry.location.lat()
+          const newLng = place.geometry.location.lng()
+          const addr = place.formatted_address || place.name
+
+          map.setCenter(place.geometry.location)
+          map.setZoom(17)
+          marker.setPosition(place.geometry.location)
+
+          updateLocation(newLat, newLng, addr)
+        })
+
+        map.addListener('click', (e) => {
+          const lat = e.latLng.lat()
+          const lng = e.latLng.lng()
+          marker.setPosition(e.latLng)
+          
+          updateLocation(lat, lng, reportLocation.address || 'Loading address...')
+          
+          const geocoder = new window.google.maps.Geocoder()
+          geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+            if (status === 'OK' && results[0]) {
+              updateLocation(lat, lng, results[0].formatted_address)
+            }
+          })
+        })
+
+        marker.addListener('dragend', (e) => {
+          const lat = e.latLng.lat()
+          const lng = e.latLng.lng()
+          
+          updateLocation(lat, lng, reportLocation.address || 'Loading address...')
+          
+          const geocoder = new window.google.maps.Geocoder()
+          geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+            if (status === 'OK' && results[0]) {
+              updateLocation(lat, lng, results[0].formatted_address)
+            }
+          })
+        })
+      }
+    } else if (!showForm) {
+      modalMapInstance.current = null
+      modalMarkerRef.current = null
+      setReportLocation({ lat: null, lng: null, address: '' })
+    }
+  }, [showForm])
 
   const categories = [
     { id: 'night', label: '🌙 Unsafe at Night' },
@@ -242,11 +330,24 @@ export default function SafetyClient({ apiKey }) {
 
             <div className="flex flex-col gap-4">
               <div>
-                <label className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400 mb-1.5 pl-0.5">Route/Location</label>
+                <div className="flex justify-between items-end mb-1.5 pl-0.5 pr-1">
+                  <label className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400">Route/Location</label>
+                  {reportLocation.lat && (
+                    <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">
+                      {reportLocation.lat.toFixed(5)}, {reportLocation.lng.toFixed(5)}
+                    </span>
+                  )}
+                </div>
                 <input
+                  ref={searchInputRef}
                   type="text"
-                  placeholder="e.g. Adamson University"
+                  placeholder="Search a place or click on the map"
                   className="border border-white/10 bg-slate-950/60 rounded-xl px-4 py-3 text-sm w-full text-white focus:ring-2 focus:ring-emerald-500/20 outline-none focus:border-emerald-500 font-bold transition-all"
+                  onChange={(e) => setReportLocation(prev => ({ ...prev, address: e.target.value }))}
+                />
+                <div 
+                  ref={modalMapRef} 
+                  className="w-full h-[220px] bg-slate-950/40 rounded-xl mt-3 border border-white/10 shadow-inner overflow-hidden"
                 />
               </div>
 
