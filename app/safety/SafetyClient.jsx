@@ -9,6 +9,7 @@ export default function SafetyClient({ apiKey }) {
   const [selectedCategory, setSelectedCategory] = useState('')
   const [activePin, setActivePin] = useState(safetyPins[2]) // Recto Avenue as initial pin
   const [reportLocation, setReportLocation] = useState({ lat: null, lng: null, address: '' })
+  const [selectedReportFilter, setSelectedReportFilter] = useState('All')
 
   const mapRef = useRef(null)
   const modalMapRef = useRef(null)
@@ -260,73 +261,98 @@ export default function SafetyClient({ apiKey }) {
           />
         </div>
       </div>
-
       {/* SECTION 3 — REPORT CARDS */}
       <div className="max-w-6xl mx-auto px-6 pb-12">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="font-black text-white text-xl tracking-tight uppercase">Recent Student Safety Reports</h2>
+          <h2 className="font-black text-white text-xl tracking-tight uppercase">Safety Reports</h2>
           <div className="text-xs font-black bg-white/5 border border-white/10 rounded-full px-4 py-2 text-slate-300 uppercase tracking-wider">
             Filtered by Verified Commuter Updates
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          {safetyReports.map((report) => (
-            <div key={report.id} className="bg-white/5 rounded-[28px] shadow-[0_16px_40px_rgba(0,0,0,0.4)] border border-white/10 p-5 hover:border-white/20 hover:-translate-y-2 hover:shadow-[0_0_20px_rgba(52,211,153,0.15)] transition duration-300 backdrop-blur-md">
-              <div className="flex justify-between items-start gap-2">
-                <div>
-                  <h3 className="font-black text-slate-100 text-base leading-snug">{report.route}</h3>
-                  <p className="text-xs text-slate-500 mt-1 font-medium uppercase tracking-wider">{report.date}</p>
-                </div>
-                <span className={`text-xs font-black px-3 py-1 rounded-full border bg-white/5 backdrop-blur-sm tracking-wider uppercase ${report.badgeStyles}`}>
-                  {report.badgeLabel}
-                </span>
-              </div>
-              <div className="my-3 h-px bg-white/10"></div>
-              <p className="text-sm text-slate-300 leading-relaxed font-medium">
-                {report.description}
-              </p>
-              <div className="mt-4 flex justify-between items-center border-t border-white/10 pt-3">
-                <div className="flex items-center gap-1.5 text-xs text-slate-400 font-bold uppercase tracking-wider">
-                  👥 {report.confirmed} confirmed
-                </div>
-                <button className="border border-white/10 text-emerald-400 bg-white/5 hover:bg-emerald-500/10 hover:border-emerald-500/40 text-xs font-black px-4 py-2 rounded-xl transition-all duration-300 hover:shadow-[0_0_10px_rgba(52,211,153,0.2)] active:scale-95 uppercase tracking-wider cursor-pointer">
-                  ✓ Confirm
-                </button>
-              </div>
-            </div>
-          ))}
+        <div className="flex gap-2 flex-wrap mb-6">
+          {['All', 'Unsafe', 'Harassment', 'Overcharging', 'General Warning'].map((filter) => {
+            const isSelected = selectedReportFilter === filter;
+            return (
+              <button
+                key={filter}
+                onClick={() => setSelectedReportFilter(filter)}
+                className={`px-3.5 py-2 rounded-full text-[10px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-1.5 cursor-pointer border ${
+                  isSelected 
+                    ? 'bg-emerald-400 text-slate-950 border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.3)]' 
+                    : 'bg-slate-900/50 text-slate-400 border-white/10 hover:bg-slate-800 hover:text-slate-200'
+                }`}
+              >
+                {filter}
+              </button>
+            );
+          })}
         </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          {safetyReports
+            .filter((report) => {
+              if (selectedReportFilter === 'All') return true;
+              return report.badgeLabel.toLowerCase().includes(selectedReportFilter.toLowerCase());
+            })
+            .map((report) => (
+              <div key={report.id} className="bg-white/5 rounded-[28px] shadow-[0_16px_40px_rgba(0,0,0,0.4)] border border-white/10 p-5 hover:border-white/20 hover:-translate-y-2 hover:shadow-[0_0_20px_rgba(52,211,153,0.15)] transition duration-300 backdrop-blur-md">
+                <div className="flex justify-between items-start gap-2">
+                  <div>
+                    <h3 className="font-black text-slate-100 text-base leading-snug">{report.route}</h3>
+                    <p className="text-xs text-slate-500 mt-1 font-medium uppercase tracking-wider">{report.date}</p>
+                  </div>
+                  <span className={`text-xs font-black px-3 py-1 rounded-full border bg-white/5 backdrop-blur-sm tracking-wider uppercase ${report.badgeStyles}`}>
+                    {report.badgeLabel}
+                  </span>
+                </div>
+                <div className="my-3 h-px bg-white/10"></div>
+                <p className="text-sm text-slate-300 leading-relaxed font-medium">
+                  {report.description}
+                </p>
+                <div className="mt-4 flex justify-between items-center border-t border-white/10 pt-3">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-400 font-bold uppercase tracking-wider">
+                    👥 {report.confirmed} confirmed
+                  </div>
+                  <button className="border border-white/10 text-emerald-400 bg-white/5 hover:bg-emerald-500/10 hover:border-emerald-500/40 text-xs font-black px-4 py-2 rounded-xl transition-all duration-300 hover:shadow-[0_0_10px_rgba(52,211,153,0.2)] active:scale-95 uppercase tracking-wider cursor-pointer">
+                    ✓ Confirm
+                  </button>
+                </div>
+              </div>
+            ))}
+      </div>
       </div>
 
       {/* SECTION 4 — REPORT FORM MODAL */}
       {showForm && (
-        <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900/90 border border-white/20 rounded-[32px] shadow-[0_0_50px_rgba(52,211,153,0.2)] max-w-lg w-full p-6 backdrop-blur-xl">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="font-black text-white text-lg tracking-tight uppercase">Report a Safety Concern</h2>
+        <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-md z-50 flex items-center justify-center p-3 select-none">
+          <div className="bg-slate-900/95 border border-white/20 rounded-2xl shadow-[0_0_50px_rgba(52,211,153,0.2)] max-w-md w-full p-4 sm:p-5 backdrop-blur-xl max-h-[92vh] overflow-y-auto scrollbar-none flex flex-col gap-3">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="font-black text-white text-base tracking-tight uppercase flex items-center gap-1.5">
+                <span>➕</span> Report a Safety Concern
+              </h2>
               <button
                 onClick={() => setShowForm(false)}
-                className="text-slate-400 hover:text-white text-xl font-black cursor-pointer transition-colors"
+                className="text-slate-400 hover:text-white text-xl font-black cursor-pointer transition-colors p-1"
               >
                 ✕
               </button>
             </div>
 
-            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-3.5 flex gap-3 mb-4 shadow-[0_0_12px_rgba(52,211,153,0.1)]">
-              <span className="text-2xl">🤖</span>
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-3 flex gap-3 mb-1 shadow-[0_0_12px_rgba(52,211,153,0.1)]">
+              <span className="text-xl">🤖</span>
               <div>
                 <p className="text-xs font-black text-emerald-400 uppercase tracking-[0.12em]">Screened by AI</p>
-                <p className="text-xs text-slate-400 mt-0.5 font-medium leading-relaxed">
+                <p className="text-[11px] text-slate-400 mt-0.5 font-medium leading-relaxed">
                   Your report will be screened before publishing to ensure strict student safety.
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               <div>
-                <div className="flex justify-between items-end mb-1.5 pl-0.5 pr-1">
-                  <label className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400">Route/Location</label>
+                <div className="flex justify-between items-end mb-1 pl-0.5 pr-1">
+                  <label className="block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Route/Location</label>
                   {reportLocation.lat && (
                     <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">
                       {reportLocation.lat.toFixed(5)}, {reportLocation.lng.toFixed(5)}
@@ -337,23 +363,23 @@ export default function SafetyClient({ apiKey }) {
                   ref={searchInputRef}
                   type="text"
                   placeholder="Search a place or click on the map"
-                  className="border border-white/10 bg-slate-950/60 rounded-xl px-4 py-3 text-sm w-full text-white focus:ring-2 focus:ring-emerald-500/20 outline-none focus:border-emerald-500 font-bold transition-all"
+                  className="border border-white/10 bg-slate-950/60 rounded-xl px-3.5 py-2.5 text-xs w-full text-white focus:ring-2 focus:ring-emerald-500/20 outline-none focus:border-emerald-500 font-bold transition-all"
                   onChange={(e) => setReportLocation(prev => ({ ...prev, address: e.target.value }))}
                 />
                 <div 
                   ref={modalMapRef} 
-                  className="w-full h-[220px] bg-slate-950/40 rounded-xl mt-3 border border-white/10 shadow-inner overflow-hidden"
+                  className="w-full h-[140px] bg-slate-950/40 rounded-xl mt-2 border border-white/10 shadow-inner overflow-hidden"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400 mb-1.5 pl-0.5">Category</label>
-                <div className="grid grid-cols-2 gap-2">
+                <label className="block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 mb-1 pl-0.5">Category</label>
+                <div className="grid grid-cols-2 gap-1.5">
                   {reportCategories.map((cat) => (
                     <div
                       key={cat.id}
                       onClick={() => setSelectedCategory(cat.id)}
-                      className={`cursor-pointer rounded-xl border p-3 text-xs font-black uppercase tracking-[0.12em] transition-all text-center ${
+                      className={`cursor-pointer rounded-xl border p-2 text-[11px] font-black uppercase tracking-[0.12em] transition-all text-center ${
                         selectedCategory === cat.id
                           ? 'border-emerald-500 bg-emerald-500/15 text-emerald-300 shadow-[0_0_12px_rgba(52,211,153,0.2)]'
                           : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20 hover:text-slate-200'
@@ -366,22 +392,22 @@ export default function SafetyClient({ apiKey }) {
               </div>
 
               <div>
-                <label className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400 mb-1.5 pl-0.5">Description</label>
+                <label className="block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 mb-1 pl-0.5">Description</label>
                 <textarea
-                  rows="3"
+                  rows="2"
                   placeholder="Describe what happened clearly."
-                  className="border border-white/10 bg-slate-950/60 rounded-xl px-4 py-3 text-sm w-full text-white resize-none focus:ring-2 focus:ring-emerald-500/20 outline-none focus:border-emerald-500 font-bold transition-all"
+                  className="border border-white/10 bg-slate-950/60 rounded-xl px-3.5 py-2.5 text-xs w-full text-white resize-none focus:ring-2 focus:ring-emerald-500/20 outline-none focus:border-emerald-500 font-bold transition-all"
                 ></textarea>
               </div>
 
-              <div>
+              <div className="mt-1">
                 <button
                   onClick={() => setShowForm(false)}
-                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-4 rounded-2xl transition duration-300 shadow-[0_0_15px_rgba(52,211,153,0.35)] hover:shadow-[0_0_25px_rgba(52,211,153,0.5)] active:scale-95 cursor-pointer uppercase tracking-wider text-sm"
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-2xl transition duration-300 shadow-[0_0_15px_rgba(52,211,153,0.35)] hover:shadow-[0_0_25px_rgba(52,211,153,0.5)] active:scale-95 cursor-pointer uppercase tracking-wider text-xs"
                 >
                   Submit Report
                 </button>
-                <p className="text-xs text-slate-500 text-center mt-2 font-medium">
+                <p className="text-[10px] text-slate-500 text-center mt-1.5 font-medium">
                   Your identity is anonymous. Reports are AI-screened before publishing.
                 </p>
               </div>
