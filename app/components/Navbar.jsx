@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 
 const navItems = [
@@ -33,9 +34,11 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/85 backdrop-blur-md">
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-3 sm:px-6 lg:px-8 h-14 sm:h-18">
         <Link href="/" onClick={() => setMenuOpen(false)} className="group flex items-center gap-2 sm:gap-3 shrink-0">
-          <img 
+          <Image 
             src="/icon.png" 
             alt="UniWolfe Route" 
+            width={44}
+            height={44}
             className="h-9 w-9 sm:h-11 sm:w-11 rounded-xl sm:rounded-2xl object-cover shadow-[0_12px_28px_rgba(52,211,153,0.3)] transition-transform duration-300 group-hover:scale-105 border border-white/10"
           />
           <span className="flex flex-col leading-none">

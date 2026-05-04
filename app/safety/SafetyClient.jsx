@@ -112,10 +112,7 @@ export default function SafetyClient({ apiKey }) {
         })
         autocomplete.bindTo('bounds', map)
 
-        const updateLocation = (lat, lng, addressStr) => {
-          setReportLocation({ lat, lng, address: addressStr })
-          if (searchInputRef.current) searchInputRef.current.value = addressStr
-        }
+        // Removed updateLocation and inline it
 
         autocomplete.addListener('place_changed', () => {
           const place = autocomplete.getPlace()
@@ -129,7 +126,8 @@ export default function SafetyClient({ apiKey }) {
           map.setZoom(17)
           marker.setPosition(place.geometry.location)
 
-          updateLocation(newLat, newLng, addr)
+          setReportLocation({ lat: newLat, lng: newLng, address: addr })
+          if (searchInputRef.current) searchInputRef.current.value = addr
         })
 
         map.addListener('click', (e) => {
@@ -137,12 +135,15 @@ export default function SafetyClient({ apiKey }) {
           const lng = e.latLng.lng()
           marker.setPosition(e.latLng)
           
-          updateLocation(lat, lng, reportLocation.address || 'Loading address...')
+          const currentAddr = searchInputRef.current?.value || 'Loading address...'
+          setReportLocation({ lat, lng, address: currentAddr })
           
           const geocoder = new window.google.maps.Geocoder()
           geocoder.geocode({ location: { lat, lng } }, (results, status) => {
             if (status === 'OK' && results[0]) {
-              updateLocation(lat, lng, results[0].formatted_address)
+              const formatted = results[0].formatted_address
+              setReportLocation({ lat, lng, address: formatted })
+              if (searchInputRef.current) searchInputRef.current.value = formatted
             }
           })
         })
@@ -151,12 +152,15 @@ export default function SafetyClient({ apiKey }) {
           const lat = e.latLng.lat()
           const lng = e.latLng.lng()
           
-          updateLocation(lat, lng, reportLocation.address || 'Loading address...')
+          const currentAddr = searchInputRef.current?.value || 'Loading address...'
+          setReportLocation({ lat, lng, address: currentAddr })
           
           const geocoder = new window.google.maps.Geocoder()
           geocoder.geocode({ location: { lat, lng } }, (results, status) => {
             if (status === 'OK' && results[0]) {
-              updateLocation(lat, lng, results[0].formatted_address)
+              const formatted = results[0].formatted_address
+              setReportLocation({ lat, lng, address: formatted })
+              if (searchInputRef.current) searchInputRef.current.value = formatted
             }
           })
         })
@@ -164,7 +168,7 @@ export default function SafetyClient({ apiKey }) {
     } else if (!showForm) {
       modalMapInstance.current = null
       modalMarkerRef.current = null
-      setReportLocation({ lat: null, lng: null, address: '' })
+      // Removed setReportLocation from effect to fix cascading render warning
     }
   }, [showForm])
 
@@ -198,7 +202,10 @@ export default function SafetyClient({ apiKey }) {
           </div>
         </div>
         <button
-          onClick={() => setShowForm(true)}
+          onClick={() => {
+            setReportLocation({ lat: null, lng: null, address: '' })
+            setShowForm(true)
+          }}
           className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-6 py-3.5 rounded-2xl text-sm transition-all duration-300 shadow-[0_0_15px_rgba(52,211,153,0.4)] hover:shadow-[0_0_25px_rgba(52,211,153,0.6)] hover:-translate-y-1 active:scale-95 cursor-pointer uppercase tracking-wider"
         >
           ＋ Report a Concern

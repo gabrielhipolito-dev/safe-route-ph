@@ -3,23 +3,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { transitLinesConfig } from '../data/transitLines'
 
-const formatArrivalTime = (durationText = '') => {
-  if (!durationText) return 'N/A'
-
-  const hoursMatch = durationText.match(/(\d+)\s*hr/i) || durationText.match(/(\d+)\s*hour/i)
-  const minsMatch = durationText.match(/(\d+)\s*min/i)
-
-  let totalMins = 0
-  if (hoursMatch) totalMins += parseInt(hoursMatch[1]) * 60
-  if (minsMatch) totalMins += parseInt(minsMatch[1])
-
-  if (totalMins === 0) return 'N/A'
-
-  const now = new Date()
-  now.setMinutes(now.getMinutes() + totalMins)
-
-  return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
-}
 
 const getStepDistanceKm = (step) => {
   if (!step || !step.distance) return 1
@@ -100,66 +83,6 @@ const getStepFare = (step) => {
   return `₱${Math.min(Math.ceil(14 + Math.max(0, distanceKm - 4) * 2), 1800)}`
 }
 
-const getTrainIntermediateStations = (departure, arrival) => {
-  if (!departure || !arrival) return null
-
-  const lrt1 = [
-    "Roosevelt", "Balintawak", "Monumento", "5th Avenue", "R. Papa",
-    "Abad Santos", "Blumentritt", "Tayuman", "Bambang", "D. Jose",
-    "Carriedo", "Central Terminal", "United Nations", "Pedro Gil",
-    "Quirino", "Vito Cruz", "Gil Puyat", "Libertad", "EDSA", "Baclaran"
-  ];
-  const mrt3 = [
-    "North Avenue", "Quezon Avenue", "GMA-Kamuning", "Araneta Center-Cubao",
-    "Santolan-Annas", "Ortigas", "Shaw Boulevard", "Boni", "Guadalupe",
-    "Buendia", "Ayala", "Magallanes", "Taft Avenue"
-  ];
-  const lrt2 = [
-    "Recto", "Legarda", "Pureza", "V. Mapa", "J. Ruiz", "Gilmore", "Betty Go-Belmonte",
-    "Araneta Center-Cubao", "Anonas", "Katipunan", "Santolan", "Marikina-Pasig", "Antipolo"
-  ];
-
-  const matchStop = (stops, term) => {
-    const clean = term.toLowerCase().replace(/station/g, '').trim()
-    return stops.findIndex(s => s.toLowerCase().includes(clean) || clean.includes(s.toLowerCase()))
-  }
-
-  let stopsList = null
-  let fromIdx = matchStop(lrt1, departure)
-  let toIdx = matchStop(lrt1, arrival)
-
-  if (fromIdx !== -1 && toIdx !== -1) {
-    stopsList = lrt1
-  } else {
-    fromIdx = matchStop(mrt3, departure)
-    toIdx = matchStop(mrt3, arrival)
-    if (fromIdx !== -1 && toIdx !== -1) {
-      stopsList = mrt3
-    } else {
-      fromIdx = matchStop(lrt2, departure)
-      toIdx = matchStop(lrt2, arrival)
-      if (fromIdx !== -1 && toIdx !== -1) {
-        stopsList = lrt2
-      }
-    }
-  }
-
-  if (stopsList && fromIdx !== -1 && toIdx !== -1) {
-    let sliced = []
-    if (fromIdx <= toIdx) {
-      sliced = stopsList.slice(fromIdx, toIdx + 1)
-    } else {
-      sliced = stopsList.slice(toIdx, fromIdx + 1).reverse()
-    }
-
-    return sliced.map((stop, i) => ({
-      name: stop,
-      estMinutes: i * 2
-    }))
-  }
-
-  return null
-}
 
 export default function RouteSelector({ allRoutes, origin, destination, apiKey, nearestStations }) {
   const [activeIdx, setActiveIdx] = useState(0)
