@@ -79,9 +79,18 @@ const mapGoogleNavigation = (payload) => {
       calculatedStudentFare += legFare.student
     }
 
+    const isPureWalking = steps.every(s => s.mode.toLowerCase() === 'walking' || s.instruction.toLowerCase().includes('walk'))
+    let finalSummary = route.summary || `Alternative Option ${routeIndex + 1}`
+    
+    if (isPureWalking && !finalSummary.toLowerCase().includes('walk')) {
+      finalSummary = finalSummary.startsWith('Alternative Option') 
+        ? `Walking Route ${routeIndex + 1}` 
+        : `Walking via ${finalSummary}`
+    }
+
     return {
       provider: 'Google Maps Directions',
-      summary: route.summary || `Alternative Option ${routeIndex + 1}`,
+      summary: finalSummary,
       distance: leg.distance?.text || null,
       duration: leg.duration?.text || null,
       totalFareText: route.fare?.text || null,

@@ -493,6 +493,20 @@ export default function RouteSelector({ allRoutes, origin, destination, apiKey, 
                               const linePrefix = step.line ? step.line.toUpperCase() : (activeLine ? activeLine.name : 'LRT');
                               text = text.replace(/tram/i, `${linePrefix} Train`);
                             }
+                            
+                            // Readable Text Formatting
+                            text = text.replace(/,([^\s])/g, ', $1'); // Add space after comma
+                            text = text.replace(/bus towards/i, 'Ride a bus bound for'); // Improve phrasing
+                            text = text.replace(/\bkamias\b/ig, 'Kamias Terminal'); // Clarify Kamias
+                            text = text.replace(/\bpitx\b/ig, 'PITX'); // Capitalize PITX
+                            text = text.replace(/\bedsa\b/ig, 'EDSA'); // Capitalize EDSA
+                            text = text.replace(/\bun\b/ig, 'UN'); // Capitalize UN
+                            text = text.replace(/\bup\b/ig, 'UP'); // Capitalize UP
+                            text = text.replace(/\bust\b/ig, 'UST'); // Capitalize UST
+                            text = text.replace(/\bfpj\b/ig, 'FPJ'); // Capitalize FPJ
+                            text = text.replace(/\bmrt\b/ig, 'MRT'); // Capitalize MRT
+                            text = text.replace(/\blrt\b/ig, 'LRT'); // Capitalize LRT
+
                             return text
                           })()
                         }
