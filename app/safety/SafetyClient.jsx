@@ -9,6 +9,7 @@ export default function SafetyClient({ apiKey }) {
   const [selectedCategory, setSelectedCategory] = useState('')
   const [activePin, setActivePin] = useState(safetyPins[2]) // Recto Avenue as initial pin
   const [reportLocation, setReportLocation] = useState({ lat: null, lng: null, address: '' })
+  const [selectedReportFilter, setSelectedReportFilter] = useState('All')
 
   const mapRef = useRef(null)
   const modalMapRef = useRef(null)
@@ -260,43 +261,66 @@ export default function SafetyClient({ apiKey }) {
           />
         </div>
       </div>
-
       {/* SECTION 3 — REPORT CARDS */}
       <div className="max-w-6xl mx-auto px-6 pb-12">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="font-black text-white text-xl tracking-tight uppercase">Recent Student Safety Reports</h2>
+          <h2 className="font-black text-white text-xl tracking-tight uppercase">Safety Reports</h2>
           <div className="text-xs font-black bg-white/5 border border-white/10 rounded-full px-4 py-2 text-slate-300 uppercase tracking-wider">
             Filtered by Verified Commuter Updates
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          {safetyReports.map((report) => (
-            <div key={report.id} className="bg-white/5 rounded-[28px] shadow-[0_16px_40px_rgba(0,0,0,0.4)] border border-white/10 p-5 hover:border-white/20 hover:-translate-y-2 hover:shadow-[0_0_20px_rgba(52,211,153,0.15)] transition duration-300 backdrop-blur-md">
-              <div className="flex justify-between items-start gap-2">
-                <div>
-                  <h3 className="font-black text-slate-100 text-base leading-snug">{report.route}</h3>
-                  <p className="text-xs text-slate-500 mt-1 font-medium uppercase tracking-wider">{report.date}</p>
-                </div>
-                <span className={`text-xs font-black px-3 py-1 rounded-full border bg-white/5 backdrop-blur-sm tracking-wider uppercase ${report.badgeStyles}`}>
-                  {report.badgeLabel}
-                </span>
-              </div>
-              <div className="my-3 h-px bg-white/10"></div>
-              <p className="text-sm text-slate-300 leading-relaxed font-medium">
-                {report.description}
-              </p>
-              <div className="mt-4 flex justify-between items-center border-t border-white/10 pt-3">
-                <div className="flex items-center gap-1.5 text-xs text-slate-400 font-bold uppercase tracking-wider">
-                  👥 {report.confirmed} confirmed
-                </div>
-                <button className="border border-white/10 text-emerald-400 bg-white/5 hover:bg-emerald-500/10 hover:border-emerald-500/40 text-xs font-black px-4 py-2 rounded-xl transition-all duration-300 hover:shadow-[0_0_10px_rgba(52,211,153,0.2)] active:scale-95 uppercase tracking-wider cursor-pointer">
-                  ✓ Confirm
-                </button>
-              </div>
-            </div>
-          ))}
+        <div className="flex gap-2 flex-wrap mb-6">
+          {['All', 'Unsafe', 'Harassment', 'Overcharging', 'General Warning'].map((filter) => {
+            const isSelected = selectedReportFilter === filter;
+            return (
+              <button
+                key={filter}
+                onClick={() => setSelectedReportFilter(filter)}
+                className={`px-3.5 py-2 rounded-full text-[10px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-1.5 cursor-pointer border ${
+                  isSelected 
+                    ? 'bg-emerald-400 text-slate-950 border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.3)]' 
+                    : 'bg-slate-900/50 text-slate-400 border-white/10 hover:bg-slate-800 hover:text-slate-200'
+                }`}
+              >
+                {filter}
+              </button>
+            );
+          })}
         </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          {safetyReports
+            .filter((report) => {
+              if (selectedReportFilter === 'All') return true;
+              return report.badgeLabel.toLowerCase().includes(selectedReportFilter.toLowerCase());
+            })
+            .map((report) => (
+              <div key={report.id} className="bg-white/5 rounded-[28px] shadow-[0_16px_40px_rgba(0,0,0,0.4)] border border-white/10 p-5 hover:border-white/20 hover:-translate-y-2 hover:shadow-[0_0_20px_rgba(52,211,153,0.15)] transition duration-300 backdrop-blur-md">
+                <div className="flex justify-between items-start gap-2">
+                  <div>
+                    <h3 className="font-black text-slate-100 text-base leading-snug">{report.route}</h3>
+                    <p className="text-xs text-slate-500 mt-1 font-medium uppercase tracking-wider">{report.date}</p>
+                  </div>
+                  <span className={`text-xs font-black px-3 py-1 rounded-full border bg-white/5 backdrop-blur-sm tracking-wider uppercase ${report.badgeStyles}`}>
+                    {report.badgeLabel}
+                  </span>
+                </div>
+                <div className="my-3 h-px bg-white/10"></div>
+                <p className="text-sm text-slate-300 leading-relaxed font-medium">
+                  {report.description}
+                </p>
+                <div className="mt-4 flex justify-between items-center border-t border-white/10 pt-3">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-400 font-bold uppercase tracking-wider">
+                    👥 {report.confirmed} confirmed
+                  </div>
+                  <button className="border border-white/10 text-emerald-400 bg-white/5 hover:bg-emerald-500/10 hover:border-emerald-500/40 text-xs font-black px-4 py-2 rounded-xl transition-all duration-300 hover:shadow-[0_0_10px_rgba(52,211,153,0.2)] active:scale-95 uppercase tracking-wider cursor-pointer">
+                    ✓ Confirm
+                  </button>
+                </div>
+              </div>
+            ))}
+      </div>
       </div>
 
       {/* SECTION 4 — REPORT FORM MODAL */}
