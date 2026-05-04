@@ -1,115 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-
-const now = new Date();
-const currentH = now.getHours();
-const currentM = now.getMinutes();
-
-// Create 12-hour AM/PM string from 24h hours/mins
-function createTimeStr(h, m) {
-  let adjustedH = (h + 24) % 24;
-  const ampm = adjustedH >= 12 ? 'PM' : 'AM';
-  adjustedH = adjustedH % 12;
-  adjustedH = adjustedH ? adjustedH : 12;
-  return `${adjustedH}:${m < 10 ? '0' + m : m} ${ampm}`;
-}
-
-const initialCards = [
-  {
-    id: 1,
-    route: "Adamson to Kalaw",
-    vehicleEmoji: "🛺",
-    vehicleType: "Tricycle",
-    statusText: "STILL RUNNING",
-    statusColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-    time: createTimeStr(currentH + 1, 0), // 1 hour in future
-    operatingDays: "Mon - Fri",
-    subtext: "Usual Last Trip Time",
-    subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
-    vouched: 8,
-    disputed: 0,
-    hasConfirmButton: true
-  },
-  {
-    id: 2,
-    route: "UST to Fairview",
-    vehicleEmoji: "🚐",
-    vehicleType: "UV Express",
-    statusText: "FILLING UP LAST RIDE",
-    statusColor: "bg-amber-500/10 text-amber-400 border-amber-500/30",
-    time: createTimeStr(currentH + 2, 30), // 2.5 hours in future
-    operatingDays: "Every Day",
-    subtext: "Currently at terminal",
-    subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
-    vouched: 3,
-    disputed: 1,
-    hasConfirmButton: true
-  },
-  {
-    id: 3,
-    route: "DLSU to Lawton",
-    vehicleEmoji: "🚙",
-    vehicleType: "Jeepney",
-    statusText: "TERMINAL CLOSED",
-    statusColor: "bg-rose-500/10 text-rose-400 border-rose-500/30",
-    time: createTimeStr(currentH - 1, 15), // 1 hour 15 mins in past (Passed!)
-    operatingDays: "Mon - Fri",
-    subtext: "Last trip departed",
-    subtextColor: "text-rose-400/80 text-xs mt-1 font-medium tracking-wide",
-    vouched: 5,
-    disputed: 0,
-    hasConfirmButton: false
-  },
-  {
-    id: 4,
-    route: "Recto to Antipolo",
-    vehicleEmoji: "🚈",
-    vehicleType: "LRT",
-    statusText: "STILL RUNNING",
-    statusColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-    time: createTimeStr(currentH + 3, 45), // 3.75 hours in future
-    operatingDays: "Every Day",
-    subtext: "LRT-2 Schedule",
-    subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
-    vouched: 12,
-    disputed: 1,
-    hasConfirmButton: true
-  },
-  {
-    id: 5,
-    route: "Taft Ave to North Ave",
-    vehicleEmoji: "🚇",
-    vehicleType: "MRT",
-    statusText: "FILLING UP LAST RIDE",
-    statusColor: "bg-amber-500/10 text-amber-400 border-amber-500/30",
-    time: createTimeStr(currentH + 1, 30), // 1.5 hours in future
-    operatingDays: "Every Day",
-    subtext: "MRT-3 Schedule",
-    subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
-    vouched: 24,
-    disputed: 2,
-    hasConfirmButton: true
-  },
-  {
-    id: 6,
-    route: "Ayala to Biñan",
-    vehicleEmoji: "🚌",
-    vehicleType: "Bus",
-    statusText: "STILL RUNNING",
-    statusColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-    time: createTimeStr(currentH + 2, 0), // 2 hours in future
-    operatingDays: "Mon - Fri",
-    subtext: "One Ayala Terminal",
-    subtextColor: "text-slate-500 text-xs mt-1 font-medium tracking-wide",
-    vouched: 18,
-    disputed: 0,
-    hasConfirmButton: true
-  }
-];
+import { lastTrips } from '../data/lastTrips';
 
 export default function LastTrip() {
-  const [trips, setTrips] = useState(initialCards);
+  const [trips, setTrips] = useState(lastTrips);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('All Active');
   const [showForm, setShowForm] = useState(false);
@@ -159,6 +54,16 @@ export default function LastTrip() {
     setShowForm(false);
   };
 
+  const handleVouch = (cardId) => {
+    // Keep clickable but no-op placeholder for future DB connection
+    console.log(`Vouching card with id: ${cardId}`);
+  };
+
+  const handleDispute = (cardId) => {
+    // Keep clickable but no-op placeholder for future DB connection
+    console.log(`Disputing card with id: ${cardId}`);
+  };
+
   function get24Hour(timeStr) {
     const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
     if (!match) return 0;
@@ -168,7 +73,7 @@ export default function LastTrip() {
     if (ampm === 'PM' && h < 12) h += 12;
     if (ampm === 'AM' && h === 12) h = 0;
 
-    // Public transit early morning hours continuation (e.g. 12 AM to 4 AM)
+    // Public transit early morning hours continuation (12 AM to 4 AM)
     const now = new Date();
     const curH = now.getHours();
     if (curH >= 16 && ampm === 'AM' && h <= 4) {
@@ -342,12 +247,18 @@ export default function LastTrip() {
 
                       {card.hasConfirmButton && (
                         <div className="flex gap-1.5 items-center">
-                          <div className="border border-white/10 bg-slate-800/40 text-slate-300 text-[10px] font-black px-2.5 py-1.5 rounded-xl uppercase tracking-wider flex items-center gap-1 shrink-0">
+                          <button 
+                            onClick={() => handleVouch(card.id)}
+                            className="border border-white/10 hover:border-emerald-400/50 hover:bg-emerald-500/10 bg-slate-800/40 text-slate-300 hover:text-emerald-400 text-[10px] font-black px-2.5 py-1.5 rounded-xl uppercase tracking-wider flex items-center gap-1 shrink-0 transition cursor-pointer"
+                          >
                             Vouch
-                          </div>
-                          <div className="border border-white/10 bg-slate-800/40 text-slate-300 text-[10px] font-black px-2.5 py-1.5 rounded-xl uppercase tracking-wider flex items-center gap-1 shrink-0">
+                          </button>
+                          <button 
+                            onClick={() => handleDispute(card.id)}
+                            className="border border-white/10 hover:border-rose-400/50 hover:bg-rose-500/10 bg-slate-800/40 text-slate-300 hover:text-rose-400 text-[10px] font-black px-2.5 py-1.5 rounded-xl uppercase tracking-wider flex items-center gap-1 shrink-0 transition cursor-pointer"
+                          >
                             Dispute
-                          </div>
+                          </button>
                         </div>
                       )}
                     </div>
