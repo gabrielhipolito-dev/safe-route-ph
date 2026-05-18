@@ -1,4 +1,4 @@
-# UniWolfe Route 🛡️
+# UniWolfe Route
 
 [![Build and Test](https://github.com/gabrielhipolito-dev/safe-route-ph/actions/workflows/build-check.yml/badge.svg)](https://github.com/gabrielhipolito-dev/safe-route-ph/actions/workflows/build-check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](https://opensource.org/licenses/MIT)
