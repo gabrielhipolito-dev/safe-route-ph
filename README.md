@@ -22,20 +22,20 @@ Aligned with **UN Sustainable Development Goal 11: Sustainable Cities and Commun
 
 | Feature | Description | Status |
 |---|---|---|
-| **🔰 First Timer Guide** | High-quality, verified commute tips and guidelines for newcomers navigating Manila. | Available ✅ |
-| **🛡️ AI Safety Ratings** | Live maps displaying community-submitted danger, caution, and safe zones. | Available ✅ |
-| **⏰ Last Trip Tracker** | Live, community-verified updates on jeepney and UV Express terminal times. | Available ✅ |
-| **💰 Fare Board** | Complete matrix for school-to-school routes with statutory 20% student discounts. | Available ✅ |
-| **🔀 Multi-Route Explorer** | Dynamic transit routing alternatives via Google Directions API. | Available ✅ |
+| **🔰 First Timer Guide** | Verified commute tips and guidelines for newcomers navigating Manila. | Available ✅ |
+| **🛡️ Safety Zones Map** | Google Maps-powered pins for safe, caution, and danger zones. | Available ✅ |
+| **⏰ Last Trip Tracker** | Live-style community updates on terminal cutoff times. | Available ✅ |
+| **💰 Custom Fare Board** | Student-uploaded fare breakdowns stored locally per browser. | Available ✅ |
+| **🔀 Multi-Route Explorer** | Google Directions-based route alternatives with fare estimates. | Available ✅ |
 
 ---
 
 ## 🛠️ Technology Stack
 
-* **Framework:** Next.js 15 (App Router) & React 19
+* **Framework:** Next.js 16 (App Router) & React 19
 * **Styling:** Tailwind CSS (Theme: Anti-Gravity Cyberpunk & Neo-Brutalism)
-* **Database:** Supabase (PostgreSQL)
-* **AI Engine:** Google Gemini API
+* **Database:** Supabase (PostgreSQL, planned)
+* **AI Engine:** Google Gemini API (planned)
 * **Hosting:** Vercel
 
 ---
@@ -63,18 +63,29 @@ npm install
 ### 3. Environment Variables
 Create a `.env.local` file in the root directory:
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-DATABASE_URL=your_database_url
-GEMINI_API_KEY=your_gemini_api_key
 GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key # optional client-side fallback for embeds
 ```
+
+> Supabase and Gemini keys are reserved for future API routes. Current features run without them.
 
 ### 4. Running the Development Server
 ```bash
 npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) on your browser.
+
+---
+
+## 📦 Scripts
+
+```bash
+npm run lint   # ESLint
+npm run build  # Next.js production build
+npm run start  # Start production server
+npm run ci     # Lint + build + npm audit (audit level: high)
+npm run audit  # Security audit only
+```
 
 ---
 
@@ -88,13 +99,15 @@ safe-route-ph/
 │   └── build-check.yml             ← GitHub Action for lint & build validation
 ├── app/
 │   ├── api/
-│   │   ├── gemini/route.js         ← Gemini API endpoint
-│   │   ├── reports/route.js        ← Reports submission endpoint
-│   │   └── routes/route.js         ← Routes search API
+│   │   ├── gemini/route.js         ← Placeholder for Gemini API
+│   │   ├── reports/route.js        ← Placeholder for report submission
+│   │   └── routes/route.js         ← Live route search API
 │   ├── components/
 │   │   ├── FeatureCards.jsx        ← Homepage features section
 │   │   ├── Navbar.jsx              ← Brand navigation
 │   │   └── SearchWidget.jsx        ← Main commute route finder
+│   ├── custom-route/
+│   │   └── page.jsx                ← Custom fare board (localStorage)
 │   ├── fares/
 │   │   └── page.jsx                ← Complete 2026 Fare matrix
 │   ├── first-timer/
@@ -102,16 +115,44 @@ safe-route-ph/
 │   ├── last-trip/
 │   │   └── page.jsx                ← Last trip tracking page
 │   ├── route-result/
+│   │   ├── RouteSelector.jsx       ← Route options + embedded map
 │   │   └── page.jsx                ← Detailed Google Transit results
 │   ├── safety/
-│   │   └── page.jsx                ← Google Maps native zone plotting
+│   │   ├── SafetyClient.jsx        ← Google Maps client
+│   │   └── page.jsx                ← Safety zone UI
+│   ├── data/
+│   │   └── *.js                    ← Static seed data for UI
+│   ├── lib/
+│   │   ├── fareScraper.js          ← Fare scraping utilities
+│   │   └── routeSearch.js          ← Google Directions integration
 │   ├── globals.css                 ← Tailwind styling rules
 │   ├── layout.jsx                  ← Base metadata & layout
 │   └── page.jsx                    ← Primary landing page
+├── data/
+│   └── scraped_fares.json          ← Optional scraped fare cache
+├── tools/
+│   ├── fareSources.json            ← Scrape targets
+│   └── scrapeFares.js              ← Node scraper entrypoint
 └── public/                         ← Static assets (icon.png)
 ```
 
 ---
+
+## 🧾 Data & Storage
+
+- Most UI data lives in `app/data/*` and is shipped as static seed content.
+- Custom fare board entries are stored in the browser’s `localStorage`.
+- Optional scraped fares are cached in `data/scraped_fares.json`.
+
+---
+
+## 🧪 Optional Fare Scraping
+
+```bash
+node tools/scrapeFares.js
+```
+
+Updates `data/scraped_fares.json` using sources defined in `tools/fareSources.json`.
 
 ## 🎨 Aesthetic & Design Rules
 
