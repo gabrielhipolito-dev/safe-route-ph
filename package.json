@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
     "ci": "npm run lint && npm run build && npm audit --audit-level=high",
     "audit": "npm audit --audit-level=high"
   },
@@ -31,6 +32,7 @@
     "eslint-config-next": "^16.2.4",
     "postcss": "^8.5.10",
     "tailwindcss": "^4.2.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.7"
   }
 }

@@ -76,6 +76,11 @@ npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) on your browser.
 
+### 5. Running Tests
+```bash
+npm test
+```
+
 ---
 
 ## 🏗️ Folder Structure & Architectural Blueprint
