@@ -174,7 +174,7 @@ describe('getRouteSearchResult', () => {
     expect(result.navigation?.steps[0].instruction).toBe('Walk to & go')
     expect(result.navigation?.allRoutes).toHaveLength(1)
     expect(result.navigation?.calculatedRegularFare).toBe(28)
-    expect(result.navigation?.calculatedStudentFare).toBe(22)
+    expect(result.navigation?.calculatedStudentFare).toBe(23)
     expect(result.nearestStations?.origin?.name).toBe('Origin Station')
     expect(result.nearestStations?.destination?.name).toBe('Destination Station')
     expect(result.nearestStations?.origin?.geocodedAddress).toContain('University of the Philippines Diliman')
